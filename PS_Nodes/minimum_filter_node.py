@@ -11,7 +11,7 @@ class 最小值滤镜:
     def INPUT_TYPES(s):
         return {
             "required": {
-                "image": ("IMAGE",),
+                "图像": ("IMAGE",),
                 "半径": ("INT", {
                     "default": 3,
                     "min": 1,
@@ -26,14 +26,14 @@ class 最小值滤镜:
     FUNCTION = "apply_minimum_filter"
     CATEGORY = "Image/Filter"
 
-    def apply_minimum_filter(self, image, 半径):
-        if isinstance(image, torch.Tensor):
-            image = image.cpu().numpy()
+    def apply_minimum_filter(self, 图像, 半径):
+        if isinstance(图像, torch.Tensor):
+            图像 = 图像.cpu().numpy()
         #转载请保留该标签。V：sundashuaio
         # 处理 4 维张量
-        if image.ndim == 4:
+        if 图像.ndim == 4:
             filtered_images = []
-            for img in image:
+            for img in 图像:
                 image_uint8 = (img * 255).astype(np.uint8)
 
                 if image_uint8.ndim == 3 and image_uint8.shape[2] == 3:
@@ -48,7 +48,7 @@ class 最小值滤镜:
                 filtered_images.append(filtered)
             filtered = np.stack(filtered_images)
         else:
-            image_uint8 = (image * 255).astype(np.uint8)
+            image_uint8 = (图像 * 255).astype(np.uint8)
 
             if image_uint8.ndim == 3 and image_uint8.shape[2] == 3:
                 filtered = np.stack([
