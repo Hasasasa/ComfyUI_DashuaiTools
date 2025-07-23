@@ -3,7 +3,7 @@ import torch
 from skimage import filters
 from skimage.morphology import square
 #转载请保留该标签。V：sundashuaio
-class D_SHINENode:
+class 最小值滤镜:
     def __init__(self):
         pass
 
@@ -12,7 +12,7 @@ class D_SHINENode:
         return {
             "required": {
                 "image": ("IMAGE",),
-                "kernel_size": ("INT", {
+                "半径": ("INT", {
                     "default": 3,
                     "min": 1,
                     "max": 255,
@@ -26,7 +26,7 @@ class D_SHINENode:
     FUNCTION = "apply_minimum_filter"
     CATEGORY = "Image/Filter"
 
-    def apply_minimum_filter(self, image, kernel_size):
+    def apply_minimum_filter(self, image, 半径):
         if isinstance(image, torch.Tensor):
             image = image.cpu().numpy()
         #转载请保留该标签。V：sundashuaio
@@ -38,11 +38,11 @@ class D_SHINENode:
 
                 if image_uint8.ndim == 3 and image_uint8.shape[2] == 3:
                     filtered = np.stack([
-                        filters.rank.minimum(image_uint8[..., i], square(kernel_size))
+                        filters.rank.minimum(image_uint8[..., i], square(半径))
                         for i in range(3)
                     ], axis=-1)
                 else:
-                    filtered = filters.rank.minimum(image_uint8, square(kernel_size))
+                    filtered = filters.rank.minimum(image_uint8, square(半径))
 
                 filtered = filtered.astype(np.float32) / 255.0
                 filtered_images.append(filtered)
@@ -52,11 +52,11 @@ class D_SHINENode:
 
             if image_uint8.ndim == 3 and image_uint8.shape[2] == 3:
                 filtered = np.stack([
-                    filters.rank.minimum(image_uint8[..., i], square(kernel_size))
+                    filters.rank.minimum(image_uint8[..., i], square(半径))
                     for i in range(3)
                 ], axis=-1)
             else:
-                filtered = filters.rank.minimum(image_uint8, square(kernel_size))
+                filtered = filters.rank.minimum(image_uint8, square(半径))
 
             filtered = filtered.astype(np.float32) / 255.0
 
