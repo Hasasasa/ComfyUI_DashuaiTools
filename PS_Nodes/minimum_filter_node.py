@@ -67,5 +67,5 @@ NODE_CLASS_MAPPINGS = {
 }
 
 NODE_DISPLAY_NAME_MAPPINGS = {
-    "D_SHINENode": "最小值滤镜 (D_SHINE☀)"
+    "D_SHINENode": "最小值滤镜 ☀"
 }

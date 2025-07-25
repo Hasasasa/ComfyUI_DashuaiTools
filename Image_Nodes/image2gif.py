@@ -137,5 +137,5 @@ NODE_CLASS_MAPPINGS = {
 }
 
 NODE_DISPLAY_NAME_MAPPINGS = {
-    "ImageComparisonGIF": "图像滑动对比GIF"
+    "ImageComparisonGIF": "图像滑动对比GIF ☀"
 }
