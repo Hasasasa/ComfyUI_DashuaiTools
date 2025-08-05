@@ -103,45 +103,7 @@ class LoadImageList:
             print(f"[DaShuai] 加载图片失败: {str(e)}")
             raise e
 
-    def save_image(self, 图片, 文件名, 保存路径):
-        try:
-            os.makedirs(保存路径, exist_ok=True)
-            # 情况1：图片是批量tensor，文件名是list
-            if isinstance(图片, torch.Tensor) and isinstance(文件名, list):
-                for i, name in enumerate(文件名):
-                    if not isinstance(name, str):
-                        name = str(name)
-                    if not name.lower().endswith((".png", ".jpg", ".jpeg", ".bmp")):
-                        name += ".png"
-                    full_path = os.path.join(保存路径, name)
-                    img_pil = self.tensor_to_pil(图片[i])
-                    img_pil.save(full_path)
-                    print(f"[DaShuai] 图片已保存: {full_path}")
-            # 情况2：图片和文件名都是list
-            elif isinstance(图片, list) and isinstance(文件名, list):
-                for img, name in zip(图片, 文件名):
-                    if not isinstance(name, str):
-                        name = str(name)
-                    if not name.lower().endswith((".png", ".jpg", ".jpeg", ".bmp")):
-                        name += ".png"
-                    full_path = os.path.join(保存路径, name)
-                    img_pil = self.tensor_to_pil(img)
-                    img_pil.save(full_path)
-                    print(f"[DaShuai] 图片已保存: {full_path}")
-            # 情况3：单张图片和单个文件名
-            else:
-                if not isinstance(文件名, str):
-                    文件名 = str(文件名)
-                if not 文件名.lower().endswith((".png", ".jpg", ".jpeg", ".bmp")):
-                    文件名 += ".png"
-                full_path = os.path.join(保存路径, 文件名)
-                img = self.tensor_to_pil(图片)
-                img.save(full_path)
-                print(f"[DaShuai] 图片已保存: {full_path}")
-            return ()
-        except Exception as e:
-            print(f"[DaShuai] 保存图片失败: {str(e)}")
-            raise e
+   
 
 # 节点映射
 NODE_CLASS_MAPPINGS = {
