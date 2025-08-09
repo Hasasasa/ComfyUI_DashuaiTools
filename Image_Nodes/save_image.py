@@ -10,6 +10,10 @@ class SaveImageWithName:
             "required": {
                 "图片": ("IMAGE",),
                 "文件名": ("STRING",),
+                "拼接文件名": ("STRING", {
+                    "default": "",
+                    "multiline": False
+                }),
                 "保存路径": ("STRING", {
                     "default": "",
                     "multiline": False
@@ -35,8 +39,32 @@ class SaveImageWithName:
                 image = np.transpose(image, (1, 2, 0))
             # 转换为uint8格式
             image = (image * 255).clip(0, 255).astype(np.uint8)
-            return Image.fromarray(image)
-        return image_tensor 
+            pil_image = Image.fromarray(image)
+            
+            # 处理EXIF方向信息，防止图片旋转
+            try:
+                # 获取EXIF信息
+                exif = pil_image.getexif()
+                if exif:
+                    # 获取方向信息
+                    orientation = exif.get(274)  # 274是方向标签的ID
+                    if orientation:
+                        # 根据方向信息旋转图片
+                        rotation_values = {
+                            3: 180,
+                            6: 270,
+                            8: 90
+                        }
+                        if orientation in rotation_values:
+                            pil_image = pil_image.rotate(rotation_values[orientation], expand=True)
+                        # 清除EXIF方向信息，防止重复旋转
+                        exif[274] = 1  # 设置为正常方向
+                        pil_image.info['exif'] = exif.tobytes()
+            except Exception as e:
+                print(f"[DaShuai] EXIF处理警告: {str(e)}")
+            
+            return pil_image
+        return image_tensor
 
     def get_unique_filename(self, base_path, filename):
         """生成唯一的文件名，避免覆盖"""
@@ -50,7 +78,21 @@ class SaveImageWithName:
         
         return new_filename
 
-    def save_image(self, 图片, 文件名, 保存路径):
+    def process_filename(self, filename, suffix):
+        """处理文件名，将后缀拼接到合适的位置"""
+        if not suffix:
+            return filename
+        
+        # 检查文件名中是否有'.'符号
+        if '.' in filename:
+            # 有'.'符号，拼接到'.'前面
+            name, ext = os.path.splitext(filename)
+            return f"{name}{suffix}{ext}"
+        else:
+            # 没有'.'符号，直接拼接到文件名后面
+            return f"{filename}{suffix}"
+
+    def save_image(self, 图片, 文件名, 保存路径, 拼接文件名):
         try:
             os.makedirs(保存路径, exist_ok=True)
 
@@ -72,8 +114,11 @@ class SaveImageWithName:
                     if not name.lower().endswith((".png", ".jpg", ".jpeg", ".bmp")):
                         name += ".png"
                     
+                    # 处理拼接文件名
+                    processed_name = self.process_filename(name, 拼接文件名)
+                    
                     # 检查重名并生成唯一文件名
-                    unique_name = self.get_unique_filename(保存路径, name)
+                    unique_name = self.get_unique_filename(保存路径, processed_name)
                     full_path = os.path.join(保存路径, unique_name)
                     
                     img_pil = self.tensor_to_pil(img)
@@ -90,8 +135,11 @@ class SaveImageWithName:
                 if not 文件名.lower().endswith(('.png', '.jpg', '.jpeg', '.bmp')):
                     文件名 += '.png'
                 
+                # 处理拼接文件名
+                processed_name = self.process_filename(文件名, 拼接文件名)
+                
                 # 检查重名并生成唯一文件名
-                unique_name = self.get_unique_filename(保存路径, 文件名)
+                unique_name = self.get_unique_filename(保存路径, processed_name)
                 full_path = os.path.join(保存路径, unique_name)
                 
                 img_pil = self.tensor_to_pil(img)
