@@ -3,7 +3,7 @@ import torch
 from skimage import filters
 from skimage.morphology import square
 #转载请保留该标签。V：sundashuaio
-class 最小值滤镜:
+class MinimumFilter:
     def __init__(self):
         pass
 
@@ -63,9 +63,9 @@ class 最小值滤镜:
         return (torch.from_numpy(filtered),)
 
 NODE_CLASS_MAPPINGS = {
-    "D_SHINENode": 最小值滤镜
+    "MinimumFilter": MinimumFilter
 }
 
 NODE_DISPLAY_NAME_MAPPINGS = {
-    "D_SHINENode": "最小值滤镜 ☀"
+    "MinimumFilter": "最小值滤镜 ☀"
 }
