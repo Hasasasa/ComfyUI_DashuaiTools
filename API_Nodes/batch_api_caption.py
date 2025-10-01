@@ -19,7 +19,7 @@ class batch_api_caption:
                 "请求地址": ("STRING", {"default": "<url>"}),
                 "API_Key": ("STRING", {"default": "<your_key>"}),
                 "模型名称": ("STRING", {"default": "Qwen/Qwen2.5-VL-32B-Instruct"}),
-                "提示词": ("STRING", {"default": "请用自然语言描述该图片。直接返回描述，不要有其他废话。字数控制再50字以内。", "multiline": True, "rows": 4}),
+                "提示词": ("STRING", {"default": "请用自然语言描述该图片。直接返回描述，不要有其他废话。字数控制在50字以内。", "multiline": True, "rows": 4}),
                 "输出语言": (["中文", "英文"], {"default": "中文"}),
                 "温度": ("FLOAT", {"default": 0.5, "min": 0.0, "max": 2.0, "step": 0.01}),
                 "并发数": ("INT", {"default": 4, "min": 1, "max": 32}),
