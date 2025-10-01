@@ -3,6 +3,15 @@ from PIL import Image
 import torch
 import numpy as np
 
+
+def get_first_image(img):
+    # 递归取到最内层的非list对象，遇到空list返回None
+    while isinstance(img, list):
+        if not img:  # 空list
+            return None
+        img = img[0]
+    return img
+
 class SaveImageWithName:
     @classmethod
     def INPUT_TYPES(s):
@@ -158,11 +167,3 @@ NODE_CLASS_MAPPINGS = {
 NODE_DISPLAY_NAME_MAPPINGS = {
     "SaveImageWithName": "保存图像(自定义名称) ☀"
 }
-
-def get_first_image(img):
-    # 递归取到最内层的非list对象，遇到空list返回None
-    while isinstance(img, list):
-        if not img:  # 空list
-            return None
-        img = img[0]
-    return img
