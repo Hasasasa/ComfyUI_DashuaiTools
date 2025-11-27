@@ -18,7 +18,7 @@ class batch_api_caption:
                 "API类型": (["硅基流动", "贞贞工坊", "OpenRouter", "其他"], {"default": "硅基流动"}),
                 "请求地址": ("STRING", {"default": "<url>"}),
                 "API_Key": ("STRING", {"default": "<your_key>"}),
-                "模型名称": ("STRING", {"default": "Qwen/Qwen2.5-VL-32B-Instruct"}),
+                "模型名称": ("STRING", {"default": "Qwen/Qwen3-VL-32B-Instruct"}),
                 "提示词": ("STRING", {"default": "请用自然语言描述该图片。直接返回描述，不要有其他废话。字数控制在50字以内。", "multiline": True, "rows": 4}),
                 "输出语言": (["中文", "英文"], {"default": "中文"}),
                 "温度": ("FLOAT", {"default": 0.5, "min": 0.0, "max": 2.0, "step": 0.01}),
