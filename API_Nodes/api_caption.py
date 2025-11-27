@@ -39,7 +39,7 @@ class api_caption:
         }
 
     RETURN_TYPES = ("STRING",)
-    RETURN_NAMES = ("log",)
+    RETURN_NAMES = ("text",)
     FUNCTION = "generate"
     CATEGORY = "DaNodes/API"
 
