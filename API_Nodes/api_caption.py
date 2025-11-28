@@ -92,7 +92,7 @@ class api_caption:
 
             # 固定使用硅基流动的 JSON 风格请求
             try:
-                r = requests.post(请求地址, json=payload, headers=headers, timeout=30)
+                r = requests.post(请求地址, json=payload, headers=headers, timeout=90)
             except Exception as e:
                 return (f"API 请求失败（网络/连接错误）: {e}",)
 

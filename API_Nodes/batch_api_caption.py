@@ -73,7 +73,7 @@ class batch_api_caption:
         }
 
     @staticmethod
-    def _post(api_url: str, api_key: str, payload: dict, timeout_sec: float = 30.0, retries: int = 0):
+    def _post(api_url: str, api_key: str, payload: dict, timeout_sec: float = 90.0, retries: int = 0):
         headers = {
             "Authorization": f"Bearer {api_key}",
             "Content-Type": "application/json",
@@ -201,7 +201,7 @@ class batch_api_caption:
                     prompt_full = f"{提示词} Please return the description in English."
 
                 payload = self._build_payload(模型名称, prompt_full, img_data_uri, 温度)
-                ok, resp = self._post(api_url, API_Key, payload, timeout_sec=30.0, retries=1)
+                ok, resp = self._post(api_url, API_Key, payload, timeout_sec=90.0, retries=1)
 
                 if ok:
                     with open(out_txt, "w", encoding="utf-8") as f:
