@@ -19,7 +19,7 @@ class batch_api_caption:
                 "请求地址": ("STRING", {"default": "<url>"}),
                 "API_Key": ("STRING", {"default": "<your_key>"}),
                 "模型名称": ("STRING", {"default": "Qwen/Qwen3-VL-32B-Instruct"}),
-                "提示词": ("STRING", {"default": "请用自然语言描述该图片。直接返回描述，不要有其他废话。字数控制在50字以内。", "multiline": True, "rows": 4}),
+                "提示词": ("STRING", {"default": "你是一位专业的AI图像生成提示词工程师。请详细描述这张图像的主体、前景、中景、背景、构图、视觉引导、色调、光影氛围等细节并创作出具有深度、氛围和艺术感的图像提示词。要求：中文提示词，不要出现对图像水印的描述，不要出现无关的文字和符号，不需要总结，限制在800字以内", "multiline": True, "rows": 4}),
                 "输出语言": (["中文", "英文"], {"default": "中文"}),
                 "温度": ("FLOAT", {"default": 0.5, "min": 0.0, "max": 2.0, "step": 0.01}),
                 "并发数": ("INT", {"default": 6, "min": 1, "max": 32}),
