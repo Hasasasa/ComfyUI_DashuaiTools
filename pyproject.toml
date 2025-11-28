@@ -1,0 +1,13 @@
+[project]
+name = "comfyui_dashuai_tools"
+description = "DashuaiTools: utility nodes for ComfyUI (API caption, batch caption, image utilities, PS-style filters)."
+version = "0.1.0"
+dependencies = ["scikit-image", "requests"]
+
+[project.urls]
+Repository = "https://github.com/Hasasasa/ComfyUI_DashuaiTools"
+
+[tool.comfy]
+PublisherId = "dashuai"
+DisplayName = "ComfyUI_DashuaiTools"
+Icon = ""
