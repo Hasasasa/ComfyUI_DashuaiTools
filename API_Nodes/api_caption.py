@@ -2,17 +2,19 @@
 import base64
 import io
 import json
+import time
 from typing import Tuple
 
 import numpy as np
 import requests
 from PIL import Image
+from requests.adapters import HTTPAdapter
 import torch
 
 
 def tensor2pil(t_image: torch.Tensor) -> Image.Image:
     if not isinstance(t_image, torch.Tensor):
-        raise TypeError("输入必须为 torch.Tensor")
+        raise TypeError("输入必须是 torch.Tensor")
     arr = t_image.cpu().numpy()
     if arr.ndim == 4:
         arr = arr[0]
@@ -32,7 +34,7 @@ class api_caption:
                 "API_Key": ("STRING", {"default": "<your_key>"}),
                 "模型名称": ("STRING", {"default": "Qwen/Qwen3-VL-32B-Instruct"}),
                 "image": ("IMAGE",),
-                "提示词": ("STRING", {"default": "你是一位专业的AI图像生成提示词工程师。请详细描述这张图像的主体、前景、中景、背景、构图、视觉引导、色调、光影氛围等细节并创作出具有深度、氛围和艺术感的图像提示词。要求：中文提示词，不要出现对图像水印的描述，不要出现无关的文字和符号，不需要总结，限制在800字以内", "multiline": True, "rows": 4}),
+                "提示词": ("STRING", {"default": "你是一位专业的AI图像生成提示词工程师。请详细描述这张图像的主体、前景、中景、背景、构图、视觉引导、色调、光影氛围等细节并创作出具有深度、氛围和艺术感的图像提示词。要求：中文提示词，不要出现对图像水印的描述，不要出现无关的文字和符号，不需要总结，限制在800字以内。", "multiline": True, "rows": 4}),
                 "输出语言": (["中文", "英文"], {"default": "中文"}),
                 "温度": ("FLOAT", {"default": 0.5, "min": 0.0, "max": 2.0, "step": 0.01}),
             }
@@ -46,6 +48,15 @@ class api_caption:
     def generate(self, API类型: str, API_Key: str, 模型名称: str, image: torch.Tensor, 提示词: str,
                  输出语言: str, 温度: float = 0.5, 请求地址: str = "") -> Tuple[str]:
         try:
+            # 复用 HTTP 连接以减少握手开销
+            session = getattr(self, "_session", None)
+            if session is None:
+                session = requests.Session()
+                adapter = HTTPAdapter(pool_connections=4, pool_maxsize=4)
+                session.mount("https://", adapter)
+                session.mount("http://", adapter)
+                self._session = session
+
             # 根据 provider 选择实际的 URL
             provider_map = {
                 "OpenRouter": "https://openrouter.ai/api/v1/chat/completions",
@@ -58,6 +69,7 @@ class api_caption:
                 请求地址 = provider_map.get(API类型, 请求地址)
             if not 请求地址:
                 return ("请求地址为空，请填写或选择有效的 API 类型",)
+
             # image -> base64（保持原始尺寸，使用无损 PNG 编码）
             pil = tensor2pil(image)
             buf = io.BytesIO()
@@ -70,7 +82,7 @@ class api_caption:
             else:
                 提示词_full = f"{提示词} Please return the description in English."
 
-            # 按照示例将图片放到 messages[0].content 中
+            # 按照示例将图片放在 messages[0].content 中
             image_data_uri = f"data:image/png;base64,{img_b64}"
             messages = [
                 {
@@ -90,11 +102,25 @@ class api_caption:
                 "User-Agent": "ComfyUI-DaNodes/1.0",
             }
 
-            # 固定使用硅基流动的 JSON 风格请求
-            try:
-                r = requests.post(请求地址, json=payload, headers=headers, timeout=90)
-            except Exception as e:
-                return (f"API 请求失败（网络/连接错误）: {e}",)
+            # 固定使用硅基流动式 JSON 风格请求，遇到 429/5xx/读超时简单重试一次
+            r = None
+            last_err = None
+            for attempt in range(2):
+                try:
+                    r = session.post(请求地址, json=payload, headers=headers, timeout=90)
+                except Exception as e:
+                    last_err = e
+                    if attempt == 0:
+                        time.sleep(1.0)
+                        continue
+                    return (f"API 请求失败（网络连接错误）: {e}",)
+                if not r.ok and r.status_code in (429, 500, 502, 503, 504) and attempt == 0:
+                    time.sleep(1.0)
+                    continue
+                break
+
+            if r is None:
+                return (f"API 请求失败: {last_err}",)
 
             if not r.ok:
                 body = None
@@ -108,7 +134,7 @@ class api_caption:
             try:
                 result = r.json()
             except Exception as e:
-                return (f"无法解析 API 返回为 JSON: {e}; body: {r.text}",)
+                return (f"无法解析 API 返回的 JSON: {e}; body: {r.text}",)
 
             # 提取文本回复的帮助函数
             def extract_text_from_content(content):
@@ -165,6 +191,7 @@ class api_caption:
         except Exception as e:
             # 捕获整个函数体的未处理异常，避免 ComfyUI 无输出
             return (f"节点内部异常: {e}",)
+
 
 NODE_CLASS_MAPPINGS = {
     "api_caption": api_caption
