@@ -47,6 +47,7 @@ class XYImage:
     2. 样式缓存：只改网格/字体时不重跑。
     3. 多种布局：XY Plot, X:Y, Y:X。
     4. 显存优化：主动释放显存，防止 LoRA 切换时卡顿。
+    5. [修复] 能够从 SaveImage/PreviewImage 等非 Tensor 输出节点的上游抓取图片。
     """
 
     @classmethod
@@ -57,8 +58,8 @@ class XYImage:
                 "间隔大小": ("INT", {"default": 10, "min": 5, "max": 1000, "step": 5}),
                 "字体大小": ("INT", {"default": 50, "min": 50, "max": 250, "step": 1}),
                 "展示面板": (["XY Plot", "X:Y", "Y:X"],),
-                "x_attr": ("STRING", {"default": "", "multiline": True, "placeholder": "X 轴配置: <x:Label>[node_id:input]='value'"}),
-                "y_attr": ("STRING", {"default": "", "multiline": True, "placeholder": "Y 轴配置: <y:Label>[node_id:input]='value'"}),
+                "x_attr": ("STRING", {"default": "", "multiline": True, "placeholder": "右键唤起参数浮窗\nX轴配置: <x:Label>[node_id:input]='value'"}),
+                "y_attr": ("STRING", {"default": "", "multiline": True, "placeholder": "右键唤起参数浮窗\nY轴配置: <y:Label>[node_id:input]='value'"}),
             },
             "hidden": {
                 "prompt": "PROMPT",
@@ -413,6 +414,9 @@ class XYImage:
             NODE_CLASS_MAPPINGS = comfy_nodes.NODE_CLASS_MAPPINGS
             total = len(x_keys) * len(y_keys)
             iteration = 0
+            
+            # 初始化历史记录，用于过滤重复日志
+            last_mods_log = {'x': None, 'y': None}
 
             for yi, y_key in enumerate(y_keys):
                 y_mod = y_points.get(y_key, {}) if y_points else {}
@@ -422,12 +426,44 @@ class XYImage:
                     
                     print(f"[XY_Image] Iteration {iteration}/{total} (Y={yi+1}, X={xi+1})")
                     
+                    # --- 新增：打印本次运行变动的参数 (优化格式 & 去重) ---
+                    current_log_parts = []
+                    
+                    def get_clean_mod_str(mod_dict):
+                        items = []
+                        if not mod_dict: return ""
+                        # 排序保证一致性
+                        for nid in sorted(mod_dict.keys()):
+                            if nid == 'label': continue
+                            params = mod_dict[nid]
+                            if isinstance(params, dict):
+                                for k, v in params.items():
+                                    items.append(f"[{nid}].{k}={v}")
+                        return ", ".join(items)
+
+                    x_str = get_clean_mod_str(x_mod)
+                    y_str = get_clean_mod_str(y_mod)
+                    
+                    # 对比上次打印的内容，只有变动了才打印
+                    # 分别跟踪 X 和 Y，避免同一行内 Y 参数重复刷屏
+                    if x_str and x_str != last_mods_log['x']:
+                        current_log_parts.append(f"X: {x_str}")
+                        last_mods_log['x'] = x_str
+                    
+                    if y_str and y_str != last_mods_log['y']:
+                        current_log_parts.append(f"Y: {y_str}")
+                        last_mods_log['y'] = y_str
+                        
+                    if current_log_parts:
+                        print(f"[XY_Image] Params: {' | '.join(current_log_parts)}")
+                    # ------------------------------------
+                    
                     try:
                         p_copy = copy.deepcopy(prompt)
                         if x_mod: p_copy = self._apply_modifications(p_copy, x_mod, NODE_CLASS_MAPPINGS)
                         if y_mod: p_copy = self._apply_modifications(p_copy, y_mod, NODE_CLASS_MAPPINGS)
                         
-                        # 查找输出节点
+                        # 查找输出节点 (Leaves)
                         all_ids = set(p_copy.keys())
                         used_ids = set()
                         for n in p_copy.values():
@@ -441,30 +477,36 @@ class XYImage:
                         # 递归执行，带有 batch_execution_cache
                         current_step_cache = {} # 防止单次图中的环路
                         
-                        iter_outputs = {} # 收集本次迭代的最终输出
+                        # 执行所有叶子节点（这将触发整图执行）
                         for t in target_nodes:
-                            # 这里调用新写的智能递归方法
-                            _, output = self._get_node_hash_and_output(t, p_copy, batch_execution_cache, current_step_cache, NODE_CLASS_MAPPINGS)
-                            if output is not None:
-                                iter_outputs[t] = output
+                            self._get_node_hash_and_output(t, p_copy, batch_execution_cache, current_step_cache, NODE_CLASS_MAPPINGS)
                         
-                        # 搜刮图片
+                        # --- 搜刮图片 (FIXED LOGIC) ---
+                        # 原版代码只在 iter_outputs (叶子节点输出) 中找图片，导致 SaveImage (返回 Dict) 无法提供图片。
+                        # 现在我们在 current_step_cache (所有已执行节点) 中找图片。
+                        
                         found_img = None
-                        sorted_ids = sorted(list(iter_outputs.keys()), key=lambda x: int(x) if x.isdigit() else 0, reverse=True)
+                        
+                        # 按 Node ID 倒序搜索 (通常后面的 ID 是生成结果)
+                        sorted_cache_ids = sorted(list(current_step_cache.keys()), key=lambda x: int(x) if str(x).isdigit() else 0, reverse=True)
                         
                         def get_items(c):
                             if isinstance(c, tuple): return list(c)
                             if hasattr(c, 'args'): return list(c.args) if hasattr(c.args, '__iter__') else [c.args]
                             return [c]
 
-                        for nid in sorted_ids:
-                            outs = iter_outputs[nid]
+                        for nid in sorted_cache_ids:
+                            # cache 结构: { node_id: (hash, output_tuple) }
+                            _, outs = current_step_cache[nid]
                             try:
                                 candidates = get_items(outs)
                                 for item in candidates:
                                     if isinstance(item, torch.Tensor):
+                                        # 检查是否为图片张量 [B, H, W, C] 或 [B, C, H, W]
+                                        # ComfyUI 标准图片是 [B, H, W, 3]
                                         if item.ndim == 4 and item.shape[-1] in [3, 4]:
                                             found_img = item; break
+                                        # 某些特殊节点可能是 [C, H, W] ? 兼容性处理
                                         if item.ndim == 3 and item.shape[-1] in [3, 4]:
                                             found_img = item.unsqueeze(0); break
                                 if found_img is not None: break
@@ -475,6 +517,7 @@ class XYImage:
                             result_tensors.append(found_img.cpu())
                         else:
                             print(f"[XY_Image] Warning: No image found in iteration {iteration}")
+                            # Fallback: 使用输入占位图
                             if isinstance(images, torch.Tensor):
                                  result_tensors.append(images[0].unsqueeze(0).cpu())
                     

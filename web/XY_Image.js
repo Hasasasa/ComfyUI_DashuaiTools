@@ -391,6 +391,11 @@ function attachDropdown(node) {
 
             if (activeDropdown) activeDropdown.destroy();
             
+            // [Change] 如果是右键菜单事件，阻止浏览器默认菜单
+            if (e.type === 'contextmenu') {
+                e.preventDefault();
+            }
+            
             // Create new dropdown
             new Dropdown(w.inputEl, data, (val, path) => insertValue(w, path, val), [10, '100%'], document.body);
         };
@@ -398,7 +403,8 @@ function attachDropdown(node) {
         // Retry attachment if DOM not ready
         const tryAttach = () => {
             if (!w.inputEl) return false;
-            ['click', 'focus'].forEach(evt => w.inputEl.addEventListener(evt, handler));
+            // [Change] 监听右键 (contextmenu) 而不是单击 (click) 或 聚焦 (focus)
+            w.inputEl.addEventListener('contextmenu', handler);
             return true;
         };
 
