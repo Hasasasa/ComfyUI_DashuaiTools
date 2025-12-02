@@ -33,7 +33,8 @@ def load_all_nodes(root_dir):
                     if hasattr(module, "NODE_DISPLAY_NAME_MAPPINGS"):
                         NODE_DISPLAY_NAME_MAPPINGS.update(module.NODE_DISPLAY_NAME_MAPPINGS)
                 except Exception as e:
-                    failed_nodes.append(f"{module_name}: {e}")
+                    # store as tuple (module_name, error_message) so callers can unpack
+                    failed_nodes.append((module_name, str(e)))
 
     separator = "=" * 64
     print(separator)
