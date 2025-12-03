@@ -28,9 +28,9 @@
   Processes all images in a folder and calls a multimodal API in parallel to generate text descriptions, saving each caption into a `.txt` file with the same basename. Allows configuring input/output folders, model, prompt, output language and concurrency level, and returns a JSON log summarizing total/succeeded/failed counts—suitable for large‑scale dataset labeling.
 
 ## Tools
-## 参考代码https://github.com/PGCRT/CRT-Nodes/blob/main/py/LoraLoaderZImage.py
+
 - **ZImageLoraModelOnly**  
-  A Z‑Image–specific LoRA loader based on the official “LoRA Model‑Only Loader”. It loads Q/K/V‑fused Z‑Image LoRA weights and applies them only to the MODEL branch (leaving CLIP untouched). You can pick any existing LoRA by filename and adjust the model strength; recommended as the dedicated LoRA entry point for Z‑Image pipelines.
+  A Z‑Image–specific LoRA loader based on the official “LoRA Model‑Only Loader” and PGCRT/CRT-Nodes/blob/main/py/LoraLoaderZImage.py, rewritten. It loads Q/K/V‑fused Z‑Image LoRA weights and applies them only to the MODEL branch (leaving CLIP untouched). You can pick any existing LoRA by filename and adjust the model strength; recommended as the dedicated LoRA entry point for Z‑Image pipelines.
 
 ## Video_Nodes
 

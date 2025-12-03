@@ -30,8 +30,7 @@
 ## Tools
 
 - **ZImageLoraModelOnly**  
-## 参考代码https://github.com/PGCRT/CRT-Nodes/blob/main/py/LoraLoaderZImage.py
-  基于官方 LoRA Model-Only Loader 改写的 Z-Image 专用加载器，用于加载融合 Q/K/V 的 Z-Image LoRA 权重，并仅作用于模型分支（MODEL），不影响 CLIP 编码器。支持直接选择已有 LoRA 文件并调整模型强度，适合作为 Z-Image 系列模型的专用 LoRA 入口。
+  基于官方 LoRA Model-Only Loader 和PGCRT/CRT-Nodes/blob/main/py/LoraLoaderZImage.py改写的 Z-Image 专用加载器，用于加载融合 Q/K/V 的 Z-Image LoRA 权重，并仅作用于模型分支（MODEL），不影响 CLIP 编码器。支持直接选择已有 LoRA 文件并调整模型强度，适合作为 Z-Image 系列模型的专用 LoRA 入口。
 
 ## Video_Nodes
 
