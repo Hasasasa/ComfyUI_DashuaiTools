@@ -21,10 +21,10 @@
 
 ## API_Nodes
 
-- **api_caption (lite)**  
+- **api_caption**  
   Uses a multimodal chat API to generate descriptions/prompts for a single image. Compatible with the OpenAI‑style API schema and supports multiple providers (Siliconflow, ZhenZhen Workshop, OpenRouter). You can customize model name, temperature and base prompt, choose Chinese or English output, and get basic retry + error reporting.
 
-- **batch_api_caption (lite)**  
+- **batch_api_caption**  
   Processes all images in a folder and calls a multimodal API in parallel to generate text descriptions, saving each caption into a `.txt` file with the same basename. Allows configuring input/output folders, model, prompt, output language and concurrency level, and returns a JSON log summarizing total/succeeded/failed counts—suitable for large‑scale dataset labeling.
 
 ## Tools

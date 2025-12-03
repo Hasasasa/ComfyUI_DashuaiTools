@@ -1,4 +1,3 @@
-# ComfyUI 节点：batch_api_caption（批量版，简洁可用）
 import os
 import base64
 import json

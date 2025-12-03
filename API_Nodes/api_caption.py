@@ -1,4 +1,3 @@
-# ComfyUI 节点：api_caption（精简版）
 import base64
 import io
 import json
