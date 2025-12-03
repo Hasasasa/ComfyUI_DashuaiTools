@@ -11,8 +11,8 @@ class MinimumFilter:
     def INPUT_TYPES(s):
         return {
             "required": {
-                "图像": ("IMAGE",),
-                "半径": ("INT", {
+                "image": ("IMAGE",),
+                "radius": ("INT", {
                     "default": 3,
                     "min": 1,
                     "max": 255,
@@ -26,37 +26,37 @@ class MinimumFilter:
     FUNCTION = "apply_minimum_filter"
     CATEGORY = "Image/Filter"
 
-    def apply_minimum_filter(self, 图像, 半径):
-        if isinstance(图像, torch.Tensor):
-            图像 = 图像.cpu().numpy()
+    def apply_minimum_filter(self, image, radius):
+        if isinstance(image, torch.Tensor):
+            image = image.cpu().numpy()
         #转载请保留该标签。V：sundashuaio
         # 处理 4 维张量
-        if 图像.ndim == 4:
+        if image.ndim == 4:
             filtered_images = []
-            for img in 图像:
+            for img in image:
                 image_uint8 = (img * 255).astype(np.uint8)
 
                 if image_uint8.ndim == 3 and image_uint8.shape[2] == 3:
                     filtered = np.stack([
-                        filters.rank.minimum(image_uint8[..., i], square(半径))
+                        filters.rank.minimum(image_uint8[..., i], square(radius))
                         for i in range(3)
                     ], axis=-1)
                 else:
-                    filtered = filters.rank.minimum(image_uint8, square(半径))
+                    filtered = filters.rank.minimum(image_uint8, square(radius))
 
                 filtered = filtered.astype(np.float32) / 255.0
                 filtered_images.append(filtered)
             filtered = np.stack(filtered_images)
         else:
-            image_uint8 = (图像 * 255).astype(np.uint8)
+            image_uint8 = (image * 255).astype(np.uint8)
 
             if image_uint8.ndim == 3 and image_uint8.shape[2] == 3:
                 filtered = np.stack([
-                    filters.rank.minimum(image_uint8[..., i], square(半径))
+                    filters.rank.minimum(image_uint8[..., i], square(radius))
                     for i in range(3)
                 ], axis=-1)
             else:
-                filtered = filters.rank.minimum(image_uint8, square(半径))
+                filtered = filters.rank.minimum(image_uint8, square(radius))
 
             filtered = filtered.astype(np.float32) / 255.0
 
@@ -67,5 +67,5 @@ NODE_CLASS_MAPPINGS = {
 }
 
 NODE_DISPLAY_NAME_MAPPINGS = {
-    "MinimumFilter": "最小值滤镜 ☀"
+    "MinimumFilter": "MinimumFilter☀"
 }

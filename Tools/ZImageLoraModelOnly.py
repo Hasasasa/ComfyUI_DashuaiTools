@@ -132,5 +132,5 @@ NODE_CLASS_MAPPINGS = {
 }
 
 NODE_DISPLAY_NAME_MAPPINGS = {
-    "ZImageLoraModelOnly": "LoRA加载器（Z-Image，仅模型）☀",
+    "ZImageLoraModelOnly": "ZImageLoraModelOnly☀",
 }

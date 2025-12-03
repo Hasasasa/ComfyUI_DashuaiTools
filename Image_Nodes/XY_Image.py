@@ -55,9 +55,9 @@ class XYImage:
         return {
             "required": {
                 "images": ("IMAGE",),
-                "间隔大小": ("INT", {"default": 10, "min": 5, "max": 1000, "step": 5}),
-                "字体大小": ("INT", {"default": 50, "min": 50, "max": 250, "step": 1}),
-                "展示面板": (["XY Plot", "X:Y", "Y:X"],),
+                "gap_size": ("INT", {"default": 10, "min": 5, "max": 1000, "step": 5}),
+                "font_size": ("INT", {"default": 50, "min": 50, "max": 250, "step": 1}),
+                "panel_mode": (["XY Plot", "X:Y", "Y:X"],),
                 "x_attr": ("STRING", {"default": "", "multiline": True, "placeholder": "右键唤起参数浮窗\nX轴配置: <x:Label>[node_id:input]='value'"}),
                 "y_attr": ("STRING", {"default": "", "multiline": True, "placeholder": "右键唤起参数浮窗\nY轴配置: <y:Label>[node_id:input]='value'"}),
             },
@@ -75,11 +75,11 @@ class XYImage:
 
     # --- 智能检测：是否需要响应 ComfyUI 的执行请求 ---
     @classmethod
-    def IS_CHANGED(cls, 间隔大小, 字体大小, 展示面板, x_attr, y_attr, images=None, **kwargs):
+    def IS_CHANGED(cls, gap_size, font_size, panel_mode, x_attr, y_attr, images=None, **kwargs):
         prompt = kwargs.get("prompt", None)
         my_unique_id = kwargs.get("my_unique_id", None)
         content_hash = cls._calculate_workflow_fingerprint(x_attr, y_attr, prompt, my_unique_id)
-        return f"{content_hash}_{间隔大小}_{字体大小}_{展示面板}"
+        return f"{content_hash}_{gap_size}_{font_size}_{panel_mode}"
 
     @classmethod
     def _calculate_workflow_fingerprint(cls, x_attr, y_attr, prompt, ignore_id=None):
@@ -379,7 +379,7 @@ class XYImage:
         return torch.from_numpy(np_grid).unsqueeze(0)
 
     # --- 主入口 ---
-    def build_grid(self, images, 间隔大小, 字体大小, 展示面板, x_attr, y_attr, prompt=None, extra_pnginfo=None, my_unique_id=None):
+    def build_grid(self, images, gap_size, font_size, panel_mode, x_attr, y_attr, prompt=None, extra_pnginfo=None, my_unique_id=None):
         global _XY_GLOBAL_CACHE
         print(f"\n[XY_Image] ========== START ==========")
         
@@ -541,8 +541,8 @@ class XYImage:
         grid_tensor = None
         try:
             if result_tensors:
-                print(f"[XY_Image] Generating grid: {展示面板}...")
-                grid_tensor = self._create_grid_image(result_tensors, x_labels, y_labels, 间隔大小, 字体大小, 展示面板)
+                print(f"[XY_Image] Generating grid: {panel_mode}...")
+                grid_tensor = self._create_grid_image(result_tensors, x_labels, y_labels, gap_size, font_size, panel_mode)
         except Exception as e:
             print(f"[XY_Image] Grid generation failed: {e}")
             traceback.print_exc()
@@ -562,5 +562,5 @@ NODE_CLASS_MAPPINGS = {
 }
 
 NODE_DISPLAY_NAME_MAPPINGS = {
-    "XY_Image": "XY测试图☀"
+    "XY_Image": "XY_Image☀"
 }

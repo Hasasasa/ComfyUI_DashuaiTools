@@ -27,6 +27,11 @@
 - **API 批量打标（精简版）**  
     批量处理文件夹中的图片，调用多模态 API 并发生成描述并逐张写入同名 txt 文件。支持自定义输入/输出目录、模型、提示词、输出语言和并发数量，自动统计成功/失败数量并返回结构化日志，适合大规模数据集打标。
 
+## Tools
+## 参考代码https://github.com/PGCRT/CRT-Nodes/blob/main/py/LoraLoaderZImage.py
+- **ZImageLoraModelOnly**  
+    基于官方 LoRA Model-Only Loader 改写的 Z-Image 专用加载器，用于加载融合 Q/K/V 的 Z-Image LoRA 权重，并仅作用于模型分支（MODEL），不影响 CLIP 编码器。支持直接选择已有 LoRA 文件并调整模型强度，适合作为 Z-Image 系列模型的专用 LoRA 入口。
+
 ## Video_Nodes
 
 - **（预留）**  

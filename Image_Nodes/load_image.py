@@ -13,26 +13,26 @@ class LoadImageList:
     def INPUT_TYPES(s):
         return {
             "required": {
-                "文件夹路径": ("STRING", {
+                "folder_path": ("STRING", {
                     "default": "",
                     "multiline": False
                 }),
-                "最大输出数": ("INT", {
+                "max_output": ("INT", {
                     "default": 0,
                     "min": 0,
                     "max": 100,
                     "step": 1
                 }),
-                "起始加载数": ("INT", {
+                "start_index": ("INT", {
                     "default": 0,
                     "min": 0,
                     "max": 1000,
                     "step": 1
                 }),
-                "排序模式": (["无", "Alphabetical (ASC)", "Alphabetical (DESC)", 
+                "sort_mode": (["无", "Alphabetical (ASC)", "Alphabetical (DESC)", 
                                "Numerical (ASC)", "Numerical (DESC)",
                                "Datetime (ASC)", "Datetime (DESC)"],),
-                "始终加载": ("BOOLEAN", {"default": False}),
+                "always_reload": ("BOOLEAN", {"default": False}),
             }
         }
     
@@ -43,35 +43,35 @@ class LoadImageList:
     CATEGORY = "Image/Load"
     OUTPUT_NODE = True
 
-    def load_images(self, 文件夹路径, 最大输出数=0, 起始加载数=0, 排序模式="无", 始终加载=False):
+    def load_images(self, folder_path, max_output=0, start_index=0, sort_mode="无", always_reload=False):
         try:
             # 确保文件夹路径存在
-            if not os.path.exists(文件夹路径):
-                raise ValueError(f"文件夹不存在: {文件夹路径}")
+            if not os.path.exists(folder_path):
+                raise ValueError(f"文件夹不存在: {folder_path}")
                 
             # 获取所有图片文件
             image_files = []
             for ext in ('*.png', '*.jpg', '*.jpeg', '*.gif', '*.bmp'):
-                image_files.extend(glob.glob(os.path.join(文件夹路径, ext)))
+                image_files.extend(glob.glob(os.path.join(folder_path, ext)))
                 
             # 根据排序方法对文件列表进行排序
-            if 排序模式 != "无":
-                if "Alphabetical" in 排序模式:
-                    image_files.sort(reverse="DESC" in 排序模式)
-                elif "Numerical" in 排序模式:
+            if sort_mode != "无":
+                if "Alphabetical" in sort_mode:
+                    image_files.sort(reverse="DESC" in sort_mode)
+                elif "Numerical" in sort_mode:
                     image_files.sort(key=lambda x: int(''.join(filter(str.isdigit, os.path.basename(x)))), 
-                                   reverse="DESC" in 排序模式)
-                elif "Datetime" in 排序模式:
-                    image_files.sort(key=os.path.getmtime, reverse="DESC" in 排序模式)
+                                   reverse="DESC" in sort_mode)
+                elif "Datetime" in sort_mode:
+                    image_files.sort(key=os.path.getmtime, reverse="DESC" in sort_mode)
             
             # 应用起始索引和最大图片数限制
-            if 最大输出数 == 0:
-                image_files = image_files[起始加载数:]
+            if max_output == 0:
+                image_files = image_files[start_index:]
             else:
-                image_files = image_files[起始加载数:起始加载数 + 最大输出数]
+                image_files = image_files[start_index:start_index + max_output]
             
             if not image_files:
-                raise ValueError(f"在文件夹中未找到图片: {文件夹路径}")
+                raise ValueError(f"在文件夹中未找到图片: {folder_path}")
                 
             # 加载图片
             loaded_images = []
@@ -106,5 +106,5 @@ NODE_CLASS_MAPPINGS = {
 }
 
 NODE_DISPLAY_NAME_MAPPINGS = {
-    "LoadImageList": "批量加载图像 ☀"
+    "LoadImageList": "LoadImageList☀"
 }

@@ -1,0 +1,168 @@
+{
+  "api_caption": {
+    "display_name": "API 打标☀",
+    "inputs": {
+      "api_type": {
+        "name": "API 类型"
+      },
+      "api_url": {
+        "name": "请求地址"
+      },
+      "API_Key": {
+        "name": "API 密钥"
+      },
+      "model_name": {
+        "name": "模型名称"
+      },
+      "image": {
+        "name": "图像"
+      },
+      "prompt": {
+        "name": "提示词"
+      },
+      "output_language": {
+        "name": "输出语言"
+      },
+      "temperature": {
+        "name": "温度"
+      }
+    }
+  },
+  "batch_api_caption": {
+    "display_name": "API 批量打标☀",
+    "inputs": {
+      "input_dir": {
+        "name": "输入地址"
+      },
+      "output_dir": {
+        "name": "输出地址"
+      },
+      "api_type": {
+        "name": "API 类型"
+      },
+      "api_url": {
+        "name": "请求地址"
+      },
+      "API_Key": {
+        "name": "API 密钥"
+      },
+      "model_name": {
+        "name": "模型名称"
+      },
+      "prompt": {
+        "name": "提示词"
+      },
+      "output_language": {
+        "name": "输出语言"
+      },
+      "temperature": {
+        "name": "温度"
+      },
+      "concurrency": {
+        "name": "并发数"
+      }
+    }
+  },
+  "ImageComparisonGIF": {
+    "display_name": "图像滑动对比GIF ☀",
+    "inputs": {
+      "image1": {
+        "name": "图像1"
+      },
+      "image2": {
+        "name": "图像2"
+      },
+      "frames": {
+        "name": "帧数"
+      },
+      "output_path": {
+        "name": "输出路径"
+      }
+    }
+  },
+  "LoadImageList": {
+    "display_name": "批量加载图像 ☀",
+    "inputs": {
+      "folder_path": {
+        "name": "文件夹路径"
+      },
+      "max_output": {
+        "name": "最大输出数"
+      },
+      "start_index": {
+        "name": "起始加载数"
+      },
+      "sort_mode": {
+        "name": "排序模式"
+      },
+      "always_reload": {
+        "name": "始终加载"
+      }
+    }
+  },
+  "SaveImageWithName": {
+    "display_name": "保存图像(自定义名称) ☀",
+    "inputs": {
+      "image": {
+        "name": "图片"
+      },
+      "filename": {
+        "name": "文件名"
+      },
+      "filename_suffix": {
+        "name": "拼接文件名"
+      },
+      "save_path": {
+        "name": "保存路径"
+      }
+    }
+  },
+  "XY_Image": {
+    "display_name": "XY测试图☀",
+    "inputs": {
+      "images": {
+        "name": "图像"
+      },
+      "gap_size": {
+        "name": "间隔大小"
+      },
+      "font_size": {
+        "name": "字体大小"
+      },
+      "panel_mode": {
+        "name": "展示面板"
+      },
+      "x_attr": {
+        "name": "X轴配置"
+      },
+      "y_attr": {
+        "name": "Y轴配置"
+      }
+    }
+  },
+  "MinimumFilter": {
+    "display_name": "最小值滤镜 ☀",
+    "inputs": {
+      "image": {
+        "name": "图像"
+      },
+      "radius": {
+        "name": "半径"
+      }
+    }
+  },
+  "ZImageLoraModelOnly": {
+    "display_name": "LoRA加载器（Z-Image，仅模型）☀",
+    "inputs": {
+      "model": {
+        "name": "模型"
+      },
+      "lora_name": {
+        "name": "LoRA 名称"
+      },
+      "strength_model": {
+        "name": "模型强度"
+      }
+    }
+  }
+}

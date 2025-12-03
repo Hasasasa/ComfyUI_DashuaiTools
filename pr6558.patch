@@ -1,0 +1,477 @@
+From b2dbafc4339644873d576c6a65e26cf8a8e5228a Mon Sep 17 00:00:00 2001
+From: huchenlei <huchenlei@proton.me>
+Date: Tue, 21 Jan 2025 17:18:25 -0500
+Subject: [PATCH 1/3] [i18n] Add /i18n endpoint to provide all custom node
+ translations
+
+---
+ app/custom_node_manager.py                    | 116 ++++++++++++++++-
+ .../app_test/custom_node_manager_test.py      | 121 +++++++++++++++++-
+ tests-unit/utils/json_util_test.py            |  71 ++++++++++
+ utils/json_util.py                            |  26 ++++
+ 4 files changed, 321 insertions(+), 13 deletions(-)
+ create mode 100644 tests-unit/utils/json_util_test.py
+ create mode 100644 utils/json_util.py
+
+diff --git a/app/custom_node_manager.py b/app/custom_node_manager.py
+index 7f9f645cd86f..4abbdfa58271 100644
+--- a/app/custom_node_manager.py
++++ b/app/custom_node_manager.py
+@@ -4,12 +4,97 @@
+ import folder_paths
+ import glob
+ from aiohttp import web
++import json
++import logging
++from functools import lru_cache
++
++from utils.json_util import merge_json_recursive
++
++
++# Extra locale files to load into main.json
++EXTRA_LOCALE_FILES = [
++    "nodeDefs.json",
++    "commands.json",
++    "settings.json",
++]
++
++
++def safe_load_json_file(file_path: str) -> dict:
++    if not os.path.exists(file_path):
++        return {}
++
++    try:
++        with open(file_path, "r", encoding="utf-8") as f:
++            return json.load(f)
++    except json.JSONDecodeError:
++        logging.error(f"Error loading {file_path}")
++        return {}
++
+ 
+ class CustomNodeManager:
+     """
+     Placeholder to refactor the custom node management features from ComfyUI-Manager.
+     Currently it only contains the custom workflow templates feature.
+     """
++
++    @lru_cache(maxsize=1)
++    def build_translations(self):
++        """Load all custom nodes translations during initialization. Translations are
++        expected to be loaded from `locales/` folder.
++
++        The folder structure is expected to be the following:
++        - custom_nodes/
++            - custom_node_1/
++                - locales/
++                    - en/
++                        - main.json
++                        - commands.json
++                        - settings.json
++
++        returned translations are expected to be in the following format:
++        {
++            "en": {
++                "nodeDefs": {...},
++                "commands": {...},
++                "settings": {...},
++                ...{other main.json keys}
++            }
++        }
++        """
++
++        translations = {}
++
++        for folder in folder_paths.get_folder_paths("custom_nodes"):
++            for custom_node_dir in glob.glob(os.path.join(folder, "*/")):
++                locales_dir = os.path.join(custom_node_dir, "locales")
++                if not os.path.exists(locales_dir):
++                    continue
++
++                for lang_dir in glob.glob(os.path.join(locales_dir, "*/")):
++                    lang_code = os.path.basename(os.path.dirname(lang_dir))
++
++                    if lang_code not in translations:
++                        translations[lang_code] = {}
++
++                    # Load main.json
++                    main_file = os.path.join(lang_dir, "main.json")
++                    node_translations = safe_load_json_file(main_file)
++
++                    # Load extra locale files
++                    for extra_file in EXTRA_LOCALE_FILES:
++                        extra_file_path = os.path.join(lang_dir, extra_file)
++                        key = extra_file.split(".")[0]
++                        json_data = safe_load_json_file(extra_file_path)
++                        if json_data:
++                            node_translations[key] = json_data
++
++                    if node_translations:
++                        translations[lang_code] = merge_json_recursive(
++                            translations[lang_code], node_translations
++                        )
++
++        return translations
++
+     def add_routes(self, routes, webapp, loadedModules):
+ 
+         @routes.get("/workflow_templates")
+@@ -18,17 +103,36 @@ async def get_workflow_templates(request):
+             files = [
+                 file
+                 for folder in folder_paths.get_folder_paths("custom_nodes")
+-                for file in glob.glob(os.path.join(folder, '*/example_workflows/*.json'))
++                for file in glob.glob(
++                    os.path.join(folder, "*/example_workflows/*.json")
++                )
+             ]
+-            workflow_templates_dict = {} # custom_nodes folder name -> example workflow names
++            workflow_templates_dict = (
++                {}
++            )  # custom_nodes folder name -> example workflow names
+             for file in files:
+-                custom_nodes_name = os.path.basename(os.path.dirname(os.path.dirname(file)))
++                custom_nodes_name = os.path.basename(
++                    os.path.dirname(os.path.dirname(file))
++                )
+                 workflow_name = os.path.splitext(os.path.basename(file))[0]
+-                workflow_templates_dict.setdefault(custom_nodes_name, []).append(workflow_name)
++                workflow_templates_dict.setdefault(custom_nodes_name, []).append(
++                    workflow_name
++                )
+             return web.json_response(workflow_templates_dict)
+ 
+         # Serve workflow templates from custom nodes.
+         for module_name, module_dir in loadedModules:
+-            workflows_dir = os.path.join(module_dir, 'example_workflows')
++            workflows_dir = os.path.join(module_dir, "example_workflows")
+             if os.path.exists(workflows_dir):
+-                webapp.add_routes([web.static('/api/workflow_templates/' + module_name, workflows_dir)])
++                webapp.add_routes(
++                    [
++                        web.static(
++                            "/api/workflow_templates/" + module_name, workflows_dir
++                        )
++                    ]
++                )
++
++        @routes.get("/i18n")
++        async def get_i18n(request):
++            """Returns translations from all custom nodes' locales folders."""
++            return web.json_response(self.build_translations())
+diff --git a/tests-unit/app_test/custom_node_manager_test.py b/tests-unit/app_test/custom_node_manager_test.py
+index 89598de84928..b61e25e54e65 100644
+--- a/tests-unit/app_test/custom_node_manager_test.py
++++ b/tests-unit/app_test/custom_node_manager_test.py
+@@ -2,39 +2,146 @@
+ from aiohttp import web
+ from unittest.mock import patch
+ from app.custom_node_manager import CustomNodeManager
++import json
+ 
+ pytestmark = (
+     pytest.mark.asyncio
+ )  # This applies the asyncio mark to all test functions in the module
+ 
++
+ @pytest.fixture
+ def custom_node_manager():
+     return CustomNodeManager()
+ 
++
+ @pytest.fixture
+ def app(custom_node_manager):
+     app = web.Application()
+     routes = web.RouteTableDef()
+-    custom_node_manager.add_routes(routes, app, [("ComfyUI-TestExtension1", "ComfyUI-TestExtension1")])
++    custom_node_manager.add_routes(
++        routes, app, [("ComfyUI-TestExtension1", "ComfyUI-TestExtension1")]
++    )
+     app.add_routes(routes)
+     return app
+ 
++
+ async def test_get_workflow_templates(aiohttp_client, app, tmp_path):
+     client = await aiohttp_client(app)
+     # Setup temporary custom nodes file structure with 1 workflow file
+     custom_nodes_dir = tmp_path / "custom_nodes"
+-    example_workflows_dir = custom_nodes_dir / "ComfyUI-TestExtension1" / "example_workflows"
++    example_workflows_dir = (
++        custom_nodes_dir / "ComfyUI-TestExtension1" / "example_workflows"
++    )
+     example_workflows_dir.mkdir(parents=True)
+     template_file = example_workflows_dir / "workflow1.json"
+-    template_file.write_text('')
++    template_file.write_text("")
+ 
+-    with patch('folder_paths.folder_names_and_paths', {
+-        'custom_nodes': ([str(custom_nodes_dir)], None)
+-    }):
+-        response = await client.get('/workflow_templates')
++    with patch(
++        "folder_paths.folder_names_and_paths",
++        {"custom_nodes": ([str(custom_nodes_dir)], None)},
++    ):
++        response = await client.get("/workflow_templates")
+         assert response.status == 200
+         workflows_dict = await response.json()
+         assert isinstance(workflows_dict, dict)
+         assert "ComfyUI-TestExtension1" in workflows_dict
+         assert isinstance(workflows_dict["ComfyUI-TestExtension1"], list)
+         assert workflows_dict["ComfyUI-TestExtension1"][0] == "workflow1"
++
++
++async def test_build_translations_empty_when_no_locales(custom_node_manager, tmp_path):
++    custom_nodes_dir = tmp_path / "custom_nodes"
++    custom_nodes_dir.mkdir(parents=True)
++
++    with patch("folder_paths.get_folder_paths", return_value=[str(custom_nodes_dir)]):
++        translations = custom_node_manager.build_translations()
++        assert translations == {}
++
++
++async def test_build_translations_loads_all_files(custom_node_manager, tmp_path):
++    # Setup test directory structure
++    custom_nodes_dir = tmp_path / "custom_nodes" / "test-extension"
++    locales_dir = custom_nodes_dir / "locales" / "en"
++    locales_dir.mkdir(parents=True)
++
++    # Create test translation files
++    main_content = {"title": "Test Extension"}
++    (locales_dir / "main.json").write_text(json.dumps(main_content))
++
++    node_defs = {"node1": "Node 1"}
++    (locales_dir / "nodeDefs.json").write_text(json.dumps(node_defs))
++
++    commands = {"cmd1": "Command 1"}
++    (locales_dir / "commands.json").write_text(json.dumps(commands))
++
++    settings = {"setting1": "Setting 1"}
++    (locales_dir / "settings.json").write_text(json.dumps(settings))
++
++    with patch(
++        "folder_paths.get_folder_paths", return_value=[tmp_path / "custom_nodes"]
++    ):
++        translations = custom_node_manager.build_translations()
++
++        assert translations == {
++            "en": {
++                "title": "Test Extension",
++                "nodeDefs": {"node1": "Node 1"},
++                "commands": {"cmd1": "Command 1"},
++                "settings": {"setting1": "Setting 1"},
++            }
++        }
++
++
++async def test_build_translations_handles_invalid_json(custom_node_manager, tmp_path):
++    # Setup test directory structure
++    custom_nodes_dir = tmp_path / "custom_nodes" / "test-extension"
++    locales_dir = custom_nodes_dir / "locales" / "en"
++    locales_dir.mkdir(parents=True)
++
++    # Create valid main.json
++    main_content = {"title": "Test Extension"}
++    (locales_dir / "main.json").write_text(json.dumps(main_content))
++
++    # Create invalid JSON file
++    (locales_dir / "nodeDefs.json").write_text("invalid json{")
++
++    with patch(
++        "folder_paths.get_folder_paths", return_value=[tmp_path / "custom_nodes"]
++    ):
++        translations = custom_node_manager.build_translations()
++
++        assert translations == {
++            "en": {
++                "title": "Test Extension",
++            }
++        }
++
++
++async def test_build_translations_merges_multiple_extensions(
++    custom_node_manager, tmp_path
++):
++    # Setup test directory structure for two extensions
++    custom_nodes_dir = tmp_path / "custom_nodes"
++    ext1_dir = custom_nodes_dir / "extension1" / "locales" / "en"
++    ext2_dir = custom_nodes_dir / "extension2" / "locales" / "en"
++    ext1_dir.mkdir(parents=True)
++    ext2_dir.mkdir(parents=True)
++
++    # Create translation files for extension 1
++    ext1_main = {"title": "Extension 1", "shared": "Original"}
++    (ext1_dir / "main.json").write_text(json.dumps(ext1_main))
++
++    # Create translation files for extension 2
++    ext2_main = {"description": "Extension 2", "shared": "Override"}
++    (ext2_dir / "main.json").write_text(json.dumps(ext2_main))
++
++    with patch("folder_paths.get_folder_paths", return_value=[str(custom_nodes_dir)]):
++        translations = custom_node_manager.build_translations()
++
++        assert translations == {
++            "en": {
++                "title": "Extension 1",
++                "description": "Extension 2",
++                "shared": "Override",  # Second extension should override first
++            }
++        }
+diff --git a/tests-unit/utils/json_util_test.py b/tests-unit/utils/json_util_test.py
+new file mode 100644
+index 000000000000..d3089d8d1845
+--- /dev/null
++++ b/tests-unit/utils/json_util_test.py
+@@ -0,0 +1,71 @@
++from utils.json_util import merge_json_recursive
++
++
++def test_merge_simple_dicts():
++    base = {"a": 1, "b": 2}
++    update = {"b": 3, "c": 4}
++    expected = {"a": 1, "b": 3, "c": 4}
++    assert merge_json_recursive(base, update) == expected
++
++
++def test_merge_nested_dicts():
++    base = {"a": {"x": 1, "y": 2}, "b": 3}
++    update = {"a": {"y": 4, "z": 5}}
++    expected = {"a": {"x": 1, "y": 4, "z": 5}, "b": 3}
++    assert merge_json_recursive(base, update) == expected
++
++
++def test_merge_lists():
++    base = {"a": [1, 2], "b": 3}
++    update = {"a": [3, 4]}
++    expected = {"a": [1, 2, 3, 4], "b": 3}
++    assert merge_json_recursive(base, update) == expected
++
++
++def test_merge_nested_lists():
++    base = {"a": {"x": [1, 2]}}
++    update = {"a": {"x": [3, 4]}}
++    expected = {"a": {"x": [1, 2, 3, 4]}}
++    assert merge_json_recursive(base, update) == expected
++
++
++def test_merge_mixed_types():
++    base = {"a": [1, 2], "b": {"x": 1}}
++    update = {"a": [3], "b": {"y": 2}}
++    expected = {"a": [1, 2, 3], "b": {"x": 1, "y": 2}}
++    assert merge_json_recursive(base, update) == expected
++
++
++def test_merge_overwrite_non_dict():
++    base = {"a": 1}
++    update = {"a": {"x": 2}}
++    expected = {"a": {"x": 2}}
++    assert merge_json_recursive(base, update) == expected
++
++
++def test_merge_empty_dicts():
++    base = {}
++    update = {"a": 1}
++    expected = {"a": 1}
++    assert merge_json_recursive(base, update) == expected
++
++
++def test_merge_none_values():
++    base = {"a": None}
++    update = {"a": {"x": 1}}
++    expected = {"a": {"x": 1}}
++    assert merge_json_recursive(base, update) == expected
++
++
++def test_merge_different_types():
++    base = {"a": [1, 2]}
++    update = {"a": "string"}
++    expected = {"a": "string"}
++    assert merge_json_recursive(base, update) == expected
++
++
++def test_merge_complex_nested():
++    base = {"a": [1, 2], "b": {"x": [3, 4], "y": {"p": 1}}}
++    update = {"a": [5], "b": {"x": [6], "y": {"q": 2}}}
++    expected = {"a": [1, 2, 5], "b": {"x": [3, 4, 6], "y": {"p": 1, "q": 2}}}
++    assert merge_json_recursive(base, update) == expected
+diff --git a/utils/json_util.py b/utils/json_util.py
+new file mode 100644
+index 000000000000..da45af4f74f3
+--- /dev/null
++++ b/utils/json_util.py
+@@ -0,0 +1,26 @@
++def merge_json_recursive(base, update):
++    """Recursively merge two JSON-like objects.
++    - Dictionaries are merged recursively
++    - Lists are concatenated
++    - Other types are overwritten by the update value
++
++    Args:
++        base: Base JSON-like object
++        update: Update JSON-like object to merge into base
++
++    Returns:
++        Merged JSON-like object
++    """
++    if not isinstance(base, dict) or not isinstance(update, dict):
++        if isinstance(base, list) and isinstance(update, list):
++            return base + update
++        return update
++
++    merged = base.copy()
++    for key, value in update.items():
++        if key in merged:
++            merged[key] = merge_json_recursive(merged[key], value)
++        else:
++            merged[key] = value
++
++    return merged
+
+From 3ef1964c3f98bef72784f8e8441e661086c3fe54 Mon Sep 17 00:00:00 2001
+From: huchenlei <huchenlei@proton.me>
+Date: Tue, 21 Jan 2025 22:06:38 -0500
+Subject: [PATCH 2/3] Sort glob result for deterministic ordering
+
+---
+ app/custom_node_manager.py | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
+
+diff --git a/app/custom_node_manager.py b/app/custom_node_manager.py
+index 4abbdfa58271..05d9dab70a1a 100644
+--- a/app/custom_node_manager.py
++++ b/app/custom_node_manager.py
+@@ -65,7 +65,8 @@ def build_translations(self):
+         translations = {}
+ 
+         for folder in folder_paths.get_folder_paths("custom_nodes"):
+-            for custom_node_dir in glob.glob(os.path.join(folder, "*/")):
++            # Sort glob results for deterministic ordering
++            for custom_node_dir in sorted(glob.glob(os.path.join(folder, "*/"))):
+                 locales_dir = os.path.join(custom_node_dir, "locales")
+                 if not os.path.exists(locales_dir):
+                     continue
+
+From 40ba75522523697401b16c680ee12525d0e7e5ff Mon Sep 17 00:00:00 2001
+From: huchenlei <huchenlei@proton.me>
+Date: Wed, 22 Jan 2025 17:09:11 -0500
+Subject: [PATCH 3/3] Update comment
+
+---
+ app/custom_node_manager.py | 5 -----
+ 1 file changed, 5 deletions(-)
+
+diff --git a/app/custom_node_manager.py b/app/custom_node_manager.py
+index 05d9dab70a1a..42b0d75ba556 100644
+--- a/app/custom_node_manager.py
++++ b/app/custom_node_manager.py
+@@ -32,11 +32,6 @@ def safe_load_json_file(file_path: str) -> dict:
+ 
+ 
+ class CustomNodeManager:
+-    """
+-    Placeholder to refactor the custom node management features from ComfyUI-Manager.
+-    Currently it only contains the custom workflow templates feature.
+-    """
+-
+     @lru_cache(maxsize=1)
+     def build_translations(self):
+         """Load all custom nodes translations during initialization. Translations are

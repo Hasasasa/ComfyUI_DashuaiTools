@@ -17,13 +17,13 @@ class SaveImageWithName:
     def INPUT_TYPES(s):
         return {
             "required": {
-                "图片": ("IMAGE",),
-                "文件名": ("STRING",),
-                "拼接文件名": ("STRING", {
+                "image": ("IMAGE",),
+                "filename": ("STRING",),
+                "filename_suffix": ("STRING", {
                     "default": "",
                     "multiline": False
                 }),
-                "保存路径": ("STRING", {
+                "save_path": ("STRING", {
                     "default": "",
                     "multiline": False
                 }),
@@ -101,20 +101,20 @@ class SaveImageWithName:
             # 没有'.'符号，直接拼接到文件名后面
             return f"{filename}{suffix}"
 
-    def save_image(self, 图片, 文件名, 保存路径, 拼接文件名):
+    def save_image(self, image, filename, save_path, filename_suffix):
         try:
-            os.makedirs(保存路径, exist_ok=True)
+            os.makedirs(save_path, exist_ok=True)
 
             # 强制转换为list处理
-            if isinstance(图片, list):
-                if isinstance(文件名, str):
+            if isinstance(image, list):
+                if isinstance(filename, str):
                     # 自动扩展文件名
-                    name, ext = os.path.splitext(文件名)
+                    name, ext = os.path.splitext(filename)
                     ext = ext if ext else ".png"
-                    文件名 = [f"{name}（{i+1}）{ext}" for i in range(len(图片))]
+                    filename = [f"{name}（{i+1}）{ext}" for i in range(len(image))]
                 
                 # 统一list对list处理
-                for img, name in zip(图片, 文件名):
+                for img, name in zip(image, filename):
                     img = get_first_image(img)
                     if img is None:
                         continue
@@ -124,32 +124,32 @@ class SaveImageWithName:
                         name += ".png"
                     
                     # 处理拼接文件名
-                    processed_name = self.process_filename(name, 拼接文件名)
+                    processed_name = self.process_filename(name, filename_suffix)
                     
                     # 检查重名并生成唯一文件名
-                    unique_name = self.get_unique_filename(保存路径, processed_name)
-                    full_path = os.path.join(保存路径, unique_name)
+                    unique_name = self.get_unique_filename(save_path, processed_name)
+                    full_path = os.path.join(save_path, unique_name)
                     
                     img_pil = self.tensor_to_pil(img)
                     img_pil.save(full_path)
                     print(f"[DaShuai] 图片已保存: {full_path}")
             else:
                 # 单张图片处理
-                img = get_first_image(图片)
+                img = get_first_image(image)
                 if img is None:
                     print("[DaShuai] 跳过空图片")
                     return ()
-                if not isinstance(文件名, str):
-                    文件名 = str(文件名)
-                if not 文件名.lower().endswith(('.png', '.jpg', '.jpeg', '.bmp')):
-                    文件名 += '.png'
+                if not isinstance(filename, str):
+                    filename = str(filename)
+                if not filename.lower().endswith(('.png', '.jpg', '.jpeg', '.bmp')):
+                    filename += '.png'
                 
                 # 处理拼接文件名
-                processed_name = self.process_filename(文件名, 拼接文件名)
+                processed_name = self.process_filename(filename, filename_suffix)
                 
                 # 检查重名并生成唯一文件名
-                unique_name = self.get_unique_filename(保存路径, processed_name)
-                full_path = os.path.join(保存路径, unique_name)
+                unique_name = self.get_unique_filename(save_path, processed_name)
+                full_path = os.path.join(save_path, unique_name)
                 
                 img_pil = self.tensor_to_pil(img)
                 img_pil.save(full_path)
@@ -165,5 +165,5 @@ NODE_CLASS_MAPPINGS = {
 }
 
 NODE_DISPLAY_NAME_MAPPINGS = {
-    "SaveImageWithName": "保存图像(自定义名称) ☀"
+    "SaveImageWithName": "SaveImageWithName☀"
 }

@@ -29,14 +29,14 @@ class api_caption:
     def INPUT_TYPES(cls):
         return {
             "required": {
-                "API类型": (["硅基流动", "贞贞工坊", "OpenRouter", "其他"], {"default": "硅基流动"}),
-                "请求地址": ("STRING", {"default": "<url>"}),
+                "api_type": (["硅基流动", "贞贞工坊", "OpenRouter", "其他"], {"default": "硅基流动"}),
+                "api_url": ("STRING", {"default": "<url>"}),
                 "API_Key": ("STRING", {"default": "<your_key>"}),
-                "模型名称": ("STRING", {"default": "Qwen/Qwen3-VL-32B-Instruct"}),
+                "model_name": ("STRING", {"default": "Qwen/Qwen3-VL-32B-Instruct"}),
                 "image": ("IMAGE",),
-                "提示词": ("STRING", {"default": "你是一位专业的AI图像生成提示词工程师。请详细描述这张图像的主体、前景、中景、背景、构图、视觉引导、色调、光影氛围等细节并创作出具有深度、氛围和艺术感的图像提示词。要求：中文提示词，不要出现对图像水印的描述，不要出现无关的文字和符号，不需要总结，限制在800字以内。", "multiline": True, "rows": 4}),
-                "输出语言": (["中文", "英文"], {"default": "中文"}),
-                "温度": ("FLOAT", {"default": 0.5, "min": 0.0, "max": 2.0, "step": 0.01}),
+                "prompt": ("STRING", {"default": "你是一位专业的AI图像生成提示词工程师。请详细描述这张图像的主体、前景、中景、背景、构图、视觉引导、色调、光影氛围等细节并创作出具有深度、氛围和艺术感的图像提示词。要求：中文提示词，不要出现对图像水印的描述，不要出现无关的文字和符号，不需要总结，限制在800字以内。", "multiline": True, "rows": 4}),
+                "output_language": (["中文", "英文"], {"default": "中文"}),
+                "temperature": ("FLOAT", {"default": 0.5, "min": 0.0, "max": 2.0, "step": 0.01}),
             }
         }
 
@@ -45,8 +45,8 @@ class api_caption:
     FUNCTION = "generate"
     CATEGORY = "DaNodes/API"
 
-    def generate(self, API类型: str, API_Key: str, 模型名称: str, image: torch.Tensor, 提示词: str,
-                 输出语言: str, 温度: float = 0.5, 请求地址: str = "") -> Tuple[str]:
+    def generate(self, api_type: str, API_Key: str, model_name: str, image: torch.Tensor, prompt: str,
+                 output_language: str, temperature: float = 0.5, api_url: str = "") -> Tuple[str]:
         try:
             # 复用 HTTP 连接以减少握手开销
             session = getattr(self, "_session", None)
@@ -63,11 +63,11 @@ class api_caption:
                 "硅基流动": "https://api.siliconflow.cn/v1/chat/completions",
                 "贞贞工坊": "https://api.bltcy.ai/v1/chat/completions",
             }
-            if API类型 == "其他":
-                请求地址 = 请求地址 or ""
+            if api_type == "其他":
+                api_url = api_url or ""
             else:
-                请求地址 = provider_map.get(API类型, 请求地址)
-            if not 请求地址:
+                api_url = provider_map.get(api_type, api_url)
+            if not api_url:
                 return ("请求地址为空，请填写或选择有效的 API 类型",)
 
             # image -> base64（保持原始尺寸，使用无损 PNG 编码）
@@ -77,10 +77,10 @@ class api_caption:
             img_b64 = base64.b64encode(buf.getvalue()).decode()
 
             # 提示词
-            if 输出语言 == "中文":
-                提示词_full = f"{提示词} 请用中文返回描述"
+            if output_language == "中文":
+                prompt_full = f"{prompt} 请用中文返回描述"
             else:
-                提示词_full = f"{提示词} Please return the description in English."
+                prompt_full = f"{prompt} Please return the description in English."
 
             # 按照示例将图片放在 messages[0].content 中
             image_data_uri = f"data:image/png;base64,{img_b64}"
@@ -88,13 +88,13 @@ class api_caption:
                 {
                     "role": "user",
                     "content": [
-                        {"type": "text", "text": 提示词_full},
+                        {"type": "text", "text": prompt_full},
                         {"type": "image_url", "image_url": {"url": image_data_uri}},
                     ],
                 }
             ]
 
-            payload = {"model": 模型名称, "stream": False, "messages": messages, "max_tokens": 400, "temperature": float(温度)}
+            payload = {"model": model_name, "stream": False, "messages": messages, "max_tokens": 400, "temperature": float(temperature)}
             headers = {
                 "Authorization": f"Bearer {API_Key}",
                 "Content-Type": "application/json",
@@ -107,7 +107,7 @@ class api_caption:
             last_err = None
             for attempt in range(2):
                 try:
-                    r = session.post(请求地址, json=payload, headers=headers, timeout=90)
+                    r = session.post(api_url, json=payload, headers=headers, timeout=90)
                 except Exception as e:
                     last_err = e
                     if attempt == 0:
@@ -197,5 +197,5 @@ NODE_CLASS_MAPPINGS = {
     "api_caption": api_caption
 }
 NODE_DISPLAY_NAME_MAPPINGS = {
-    "api_caption": "API 打标（精简版）☀"
+    "api_caption": "api_caption☀"
 }

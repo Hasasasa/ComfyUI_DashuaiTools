@@ -13,16 +13,16 @@ class batch_api_caption:
     def INPUT_TYPES(cls):
         return {
             "required": {
-                "输入地址": ("STRING", {"default": ""}),
-                "输出地址": ("STRING", {"default": ""}),
-                "API类型": (["硅基流动", "贞贞工坊", "OpenRouter", "其他"], {"default": "硅基流动"}),
-                "请求地址": ("STRING", {"default": "<url>"}),
+                "input_dir": ("STRING", {"default": ""}),
+                "output_dir": ("STRING", {"default": ""}),
+                "api_type": (["硅基流动", "贞贞工坊", "OpenRouter", "其他"], {"default": "硅基流动"}),
+                "api_url": ("STRING", {"default": "<url>"}),
                 "API_Key": ("STRING", {"default": "<your_key>"}),
-                "模型名称": ("STRING", {"default": "Qwen/Qwen3-VL-32B-Instruct"}),
-                "提示词": ("STRING", {"default": "你是一位专业的AI图像生成提示词工程师。请详细描述这张图像的主体、前景、中景、背景、构图、视觉引导、色调、光影氛围等细节并创作出具有深度、氛围和艺术感的图像提示词。要求：中文提示词，不要出现对图像水印的描述，不要出现无关的文字和符号，不需要总结，限制在800字以内", "multiline": True, "rows": 4}),
-                "输出语言": (["中文", "英文"], {"default": "中文"}),
-                "温度": ("FLOAT", {"default": 0.5, "min": 0.0, "max": 2.0, "step": 0.01}),
-                "并发数": ("INT", {"default": 6, "min": 1, "max": 32}),
+                "model_name": ("STRING", {"default": "Qwen/Qwen3-VL-32B-Instruct"}),
+                "prompt": ("STRING", {"default": "你是一位专业的AI图像生成提示词工程师。请详细描述这张图像的主体、前景、中景、背景、构图、视觉引导、色调、光影氛围等细节并创作出具有深度、氛围和艺术感的图像提示词。要求：中文提示词，不要出现对图像水印的描述，不要出现无关的文字和符号，不需要总结，限制在800字以内", "multiline": True, "rows": 4}),
+                "output_language": (["中文", "英文"], {"default": "中文"}),
+                "temperature": ("FLOAT", {"default": 0.5, "min": 0.0, "max": 2.0, "step": 0.01}),
+                "concurrency": ("INT", {"default": 6, "min": 1, "max": 32}),
             }
         }
 
@@ -145,17 +145,17 @@ class batch_api_caption:
 
         return True, caption
 
-    def generate(self, 输入地址: str, 输出地址: str, API类型: str, 请求地址: str, API_Key: str, 模型名称: str,
-                 提示词: str, 输出语言: str, 温度: float = 0.5,
-                 并发数: int = 4) -> Tuple[str]:
+    def generate(self, input_dir: str, output_dir: str, api_type: str, api_url: str, API_Key: str, model_name: str,
+                 prompt: str, output_language: str, temperature: float = 0.5,
+                 concurrency: int = 4) -> Tuple[str]:
         # 目录校验
-        if not 输入地址:
+        if not input_dir:
             return ("输入地址未填写",)
-        if not os.path.isdir(输入地址):
-            return (f"输入地址不存在: {输入地址}",)
-        if not 输出地址:
-            输出地址 = 输入地址
-        os.makedirs(输出地址, exist_ok=True)
+        if not os.path.isdir(input_dir):
+            return (f"输入地址不存在: {input_dir}",)
+        if not output_dir:
+            output_dir = input_dir
+        os.makedirs(output_dir, exist_ok=True)
 
         # 选择 URL
         provider_map = {
@@ -163,16 +163,16 @@ class batch_api_caption:
             "硅基流动": "https://api.siliconflow.cn/v1/chat/completions",
             "贞贞工坊": "https://api.bltcy.ai/v1/chat/completions",
         }
-        if API类型 == "其他":
-            api_url = 请求地址 or ""
+        if api_type == "其他":
+            api_url = api_url or ""
         else:
-            api_url = provider_map.get(API类型, 请求地址)
+            api_url = provider_map.get(api_type, api_url)
         if not api_url:
             return ("请求地址为空，请填写或选择有效的 API 类型",)
 
         # 列出图片
         exts = (".jpg", ".jpeg", ".png", ".bmp", ".webp")
-        files = [f for f in os.listdir(输入地址) if f.lower().endswith(exts)]
+        files = [f for f in os.listdir(input_dir) if f.lower().endswith(exts)]
         if not files:
             return ("输入地址中没有图片文件",)
 
@@ -180,8 +180,8 @@ class batch_api_caption:
         first_error = None  # type: ignore[assignment]
 
         def process_one(name: str):
-            in_path = os.path.join(输入地址, name)
-            out_txt = os.path.join(输出地址, os.path.splitext(name)[0] + ".txt")
+            in_path = os.path.join(input_dir, name)
+            out_txt = os.path.join(output_dir, os.path.splitext(name)[0] + ".txt")
             try:
                 # 直接嵌入原始文件字节，不做缩放与重新编码
                 with open(in_path, 'rb') as fbin:
@@ -195,12 +195,12 @@ class batch_api_caption:
                 )
                 img_data_uri = f"data:{mime};base64,{img_b64}"
 
-                if 输出语言 == "中文":
-                    prompt_full = f"{提示词} 请用中文返回描述"
+                if output_language == "中文":
+                    prompt_full = f"{prompt} 请用中文返回描述"
                 else:
-                    prompt_full = f"{提示词} Please return the description in English."
+                    prompt_full = f"{prompt} Please return the description in English."
 
-                payload = self._build_payload(模型名称, prompt_full, img_data_uri, 温度)
+                payload = self._build_payload(model_name, prompt_full, img_data_uri, temperature)
                 ok, resp = self._post(api_url, API_Key, payload, timeout_sec=90.0, retries=1)
 
                 if ok:
@@ -213,7 +213,7 @@ class batch_api_caption:
             except Exception as e:
                 return False, name, str(e)
 
-        workers = max(1, int(并发数))
+        workers = max(1, int(concurrency))
         files_sorted = list(files)
         try:
             files_sorted.sort()
@@ -239,5 +239,5 @@ NODE_CLASS_MAPPINGS = {
     "batch_api_caption": batch_api_caption,
 }
 NODE_DISPLAY_NAME_MAPPINGS = {
-    "batch_api_caption": "API 批量打标（精简版）☀",
+    "batch_api_caption": "batch_api_caption☀",
 }
