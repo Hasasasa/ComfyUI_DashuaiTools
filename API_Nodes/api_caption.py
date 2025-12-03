@@ -23,7 +23,7 @@ def tensor2pil(t_image: torch.Tensor) -> Image.Image:
     return Image.fromarray(arr)
 
 
-class api_caption:
+class API_caption:
     @classmethod
     def INPUT_TYPES(cls):
         return {
@@ -193,8 +193,8 @@ class api_caption:
 
 
 NODE_CLASS_MAPPINGS = {
-    "api_caption": api_caption
+    "API_caption": API_caption
 }
 NODE_DISPLAY_NAME_MAPPINGS = {
-    "api_caption": "api_caption☀"
+    "API_caption": "API_caption☀"
 }

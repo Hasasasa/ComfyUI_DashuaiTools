@@ -1,5 +1,5 @@
 {
-  "api_caption": {
+  "API_caption": {
     "display_name": "API 打标☀",
     "inputs": {
       "api_type": { "name": "API 类型" },

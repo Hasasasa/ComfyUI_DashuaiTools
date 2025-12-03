@@ -7,7 +7,7 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 import requests
 
 
-class batch_api_caption:
+class Batch_API_caption:
     @classmethod
     def INPUT_TYPES(cls):
         return {
@@ -121,12 +121,12 @@ class batch_api_caption:
                 if isinstance(first, dict):
                     msg = first.get("message") or first.get("delta") or None
                     if isinstance(msg, dict) and "content" in msg:
-                        caption = batch_api_caption._extract_text_from_content(msg.get("content"))
+                        caption = Batch_API_caption._extract_text_from_content(msg.get("content"))
                     else:
                         if "text" in first and isinstance(first.get("text"), str):
                             caption = first.get("text")
                         else:
-                            caption = batch_api_caption._extract_text_from_content(first)
+                            caption = Batch_API_caption._extract_text_from_content(first)
                 else:
                     caption = str(first)
             else:
@@ -235,8 +235,8 @@ class batch_api_caption:
 
 
 NODE_CLASS_MAPPINGS = {
-    "batch_api_caption": batch_api_caption,
+    "Batch_API_caption": Batch_API_caption,
 }
 NODE_DISPLAY_NAME_MAPPINGS = {
-    "batch_api_caption": "batch_api_caption☀",
+    "Batch_API_caption": "Batch_API_caption☀",
 }
