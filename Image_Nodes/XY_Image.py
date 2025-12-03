@@ -8,32 +8,12 @@ import os
 import uuid
 import hashlib
 import gc
-
 import torch
 import numpy as np
 from PIL import Image, ImageDraw, ImageFont
-
-# --- 核心依赖导入 ---
-try:
-    import nodes as comfy_nodes
-    import execution
-    import comfy.model_management # 导入显存管理模块
-except ImportError:
-    # 尝试自动查找 ComfyUI 路径
-    try:
-        current_path = os.path.dirname(os.path.abspath(__file__))
-        # 假设位于 custom_nodes/ComfyUI_DashuaiTools/Image_Nodes/xyd_image.py
-        # 回溯 3 层找到 ComfyUI 根目录
-        comfy_path = os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(current_path))))
-        if comfy_path not in sys.path:
-            sys.path.insert(0, comfy_path)
-        import nodes as comfy_nodes
-        import execution
-        import comfy.model_management
-    except Exception as e:
-        print(f"[xyd_image] CRITICAL WARNING: Could not import 'nodes' or 'execution'. {e}")
-        comfy_nodes = None
-        execution = None
+import nodes as comfy_nodes
+import execution
+import comfy.model_management
 
 # --- 全局缓存 ---
 # 结构: { "content_hash_string": [tensor1, tensor2, ...] }
@@ -562,5 +542,5 @@ NODE_CLASS_MAPPINGS = {
 }
 
 NODE_DISPLAY_NAME_MAPPINGS = {
-    "XY_Image": "XY_Image☀"
+    "XY_Image": "XY测试图☀"
 }
