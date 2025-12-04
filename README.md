@@ -1,47 +1,48 @@
-# ComfyUI DashuaiTools 节点功能说明
+[English](README.md)  | [简体中文](README_CN.md)
+
+# ComfyUI DashuaiTools – Node Overview
 
 ## Image_Nodes
 
-- **图像滑动对比GIF**  
-  输入两张图像，生成左右滑动对比的 GIF 动图。支持自定义帧数，自动保存到 ComfyUI 的 `output` 目录并智能避免文件重名。
+- **ImageComparisonGIF**  
+  Takes two images and creates a left–right sliding comparison GIF. Supports custom frame count, automatically saves to the ComfyUI `output` folder and avoids filename collisions by adding numeric suffixes.
 
-- **批量加载图像**  
-  从指定文件夹批量加载图像，支持按字母顺序、数字顺序或文件时间升/降序排序，可设置起始索引与最大输出数量，并同时输出文件名列表，便于后续批处理和记录。
+- **LoadImageList**  
+  Loads images from a folder in batch. Supports sorting by alphabetical order, numeric order, or file modification time (ascending/descending), and lets you set start index and maximum number of outputs. Returns both image tensors and the corresponding filenames for easier batch processing and logging.
 
-- **保存图像（自定义名）**  
-  将单张或多张图像保存到指定路径，支持自定义文件名和附加后缀，自动补全扩展名并生成不重名的唯一文件，处理 EXIF 方向信息，避免保存后图片方向错误。
+- **SaveImageWithName**  
+  Saves one or multiple images to a given path with custom filenames and optional suffix. Automatically fills in missing extensions, generates unique filenames to avoid overwriting, and handles EXIF orientation to prevent rotated outputs.
 
-- **XY测试图（XY_Image）**  
-  独立实现 ComfyUI 风格的 XY Plot，对接整个工作流的节点和参数，通过配置 X / Y 轴即可一次性组合多组提示词、CFG、种子等生成对比网格。内置内容哈希与全局缓存机制：仅在上游节点或 XY 配置变动时重新执行，并在循环过程中智能清理显存占用，让多次组合跑图的速度接近手动单次运行；调整间隔、字体、布局等样式时无需重复跑图，实现类似“监控面板”的实时刷新体验。支持「XY Plot / X:Y / Y:X」三种展示方式，可灵活配置标签和轴内容，适合作为大工程的对比调参与流程可视化节点。
+- **XY_Image (XY chart)**  
+  A standalone XY Plot–style node for ComfyUI. It hooks into the entire workflow graph: you define X/Y axes as parameter overrides (prompt, CFG, seed, etc.), and it executes combinations to build comparison grids. It uses content hashing and a global cache so that only changes in upstream nodes or XY configuration trigger re‑execution; layout tweaks (gap, font size, layout mode) reuse cached results, giving a “dashboard‑like” refresh experience. Supports three layouts: “XY Plot / X:Y / Y:X”, with flexible labels and axis configuration, ideal for large workflows and parameter sweeps.
 
 ## PS_Nodes
 
-- **最小值滤镜**  
-  对标 Photoshop 的最小值滤镜，基于 skimage 的 rank minimum 算法实现。可自定义半径，对单张或批量图像进行暗化/膨胀式滤波处理，常用于抠图、细节压缩等前处理场景。
+- **MinimumFilter**  
+  A Photoshop‑style minimum filter implemented with `skimage`’s rank minimum operator. Radius is configurable and it works on single images or batches, useful for pre‑processing tasks such as matte refinement or detail suppression.
 
 ## API_Nodes
 
-- **API 打标**  
-  使用多模态对话接口为单张图片生成描述/提示词，兼容 OpenAI 标准协议，内置多家 API 配置（硅基流动、贞贞工坊、OpenRouter），支持自定义模型、温度和提示词，可选择中文或英文输出，并带有简单重试与错误信息回传。
+- **api_caption**  
+  Uses a multimodal chat API to generate descriptions/prompts for a single image. Compatible with the OpenAI‑style API schema and supports multiple providers (Siliconflow, ZhenZhen Workshop, OpenRouter). You can customize model name, temperature and base prompt, choose Chinese or English output, and get basic retry + error reporting.
 
-- **API 批量打标**  
-  批量处理文件夹中的图片，调用多模态 API 并发生成描述并逐张写入同名 txt 文件。支持自定义输入/输出目录、模型、提示词、输出语言和并发数量，自动统计成功/失败数量并返回结构化日志，适合大规模数据集打标。
+- **batch_api_caption**  
+  Processes all images in a folder and calls a multimodal API in parallel to generate text descriptions, saving each caption into a `.txt` file with the same basename. Allows configuring input/output folders, model, prompt, output language and concurrency level, and returns a JSON log summarizing total/succeeded/failed counts—suitable for large‑scale dataset labeling.
 
- - **API 提示词助手☀ (API_PromptHelper)**  
-  针对文本提示词优化 / 润色 / 补全的专用节点，基于自定义的 system 提示 `custom_instruction` 约束画面要素、构图、光影、文字内容等规则，再将“用户输入 prompt”拼接后发送给模型，返回可直接用于文生图模型的最终视觉描述。
 ## Tools
 
 - **ZImageLoraModelOnly**  
-  基于官方 LoRA Model-Only Loader 和PGCRT/CRT-Nodes/blob/main/py/LoraLoaderZImage.py改写的 Z-Image 专用加载器，用于加载融合 Q/K/V 的 Z-Image LoRA 权重，并仅作用于模型分支（MODEL），不影响 CLIP 编码器。支持直接选择已有 LoRA 文件并调整模型强度，适合作为 Z-Image 系列模型的专用 LoRA 入口。
+  A Z‑Image–specific LoRA loader based on the official “LoRA Model‑Only Loader” and PGCRT/CRT-Nodes/blob/main/py/LoraLoaderZImage.py, rewritten. It loads Q/K/V‑fused Z‑Image LoRA weights and applies them only to the MODEL branch (leaving CLIP untouched). You can pick any existing LoRA by filename and adjust the model strength; recommended as the dedicated LoRA entry point for Z‑Image pipelines.
 
 ## Video_Nodes
 
-- **（预留）**  
-  暂无功能节点，后续扩展。
+- **(Reserved)**  
+  Currently no video nodes are shipped; this section is reserved for future extensions.
 
 ---
 
-更多节点演示与教程请访问 B 站：  
+More examples and tutorials (Chinese) on Bilibili:  
 https://space.bilibili.com/85024828
 
 ---
+
