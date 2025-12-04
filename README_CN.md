@@ -1,6 +1,5 @@
-[English](README.md) | [简体中文](README_CN.md)
-
 # ComfyUI DashuaiTools 节点功能说明
+[English](README.md) | [简体中文](README_CN.md)
 
 ## Image_Nodes
 
