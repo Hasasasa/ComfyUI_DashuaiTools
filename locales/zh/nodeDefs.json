@@ -1,6 +1,6 @@
 {
   "API_caption": {
-    "display_name": "API 打标☀",
+    "display_name": "API 标题☀",
     "inputs": {
       "api_type": { "name": "API 类型" },
       "api_url": { "name": "请求地址" },
@@ -9,11 +9,12 @@
       "image": { "name": "图像" },
       "prompt": { "name": "提示词" },
       "output_language": { "name": "输出语言" },
-      "temperature": { "name": "温度" }
+      "temperature": { "name": "温度" },
+      "noise_seed": { "name": "噪波随机种" }
     }
   },
   "Batch_API_caption": {
-    "display_name": "API 批量打标☀",
+    "display_name": "API 批量标题☀",
     "inputs": {
       "input_dir": { "name": "输入地址" },
       "output_dir": { "name": "输出地址" },
@@ -37,7 +38,8 @@
       "custom_instruction": { "name": "自定义指令" },
       "prompt": { "name": "提示词" },
       "output_language": { "name": "输出语言" },
-      "temperature": { "name": "温度" }
+      "temperature": { "name": "温度" },
+      "noise_seed": { "name": "噪波随机种" }
     }
   },
   "ImageComparisonGIF": {
@@ -54,40 +56,40 @@
     "inputs": {
       "folder_path": { "name": "文件夹路径" },
       "max_output": { "name": "最大输出数" },
-      "start_index": { "name": "起始加载数" },
+      "start_index": { "name": "起始索引" },
       "sort_mode": { "name": "排序模式" },
-      "always_reload": { "name": "始终加载" }
+      "always_reload": { "name": "总是重新加载" }
     }
   },
   "SaveImageWithName": {
-    "display_name": "保存图像(自定义名称) ☀",
+    "display_name": "保存图像（自定义名称）☀",
     "inputs": {
-      "image": { "name": "图片" },
+      "image": { "name": "图像" },
       "filename": { "name": "文件名" },
-      "filename_suffix": { "name": "拼接文件名" },
+      "filename_suffix": { "name": "文件名后缀" },
       "save_path": { "name": "保存路径" }
     }
   },
   "XY_Image": {
-    "display_name": "XY测试图☀",
+    "display_name": "XY 测试图像☀",
     "inputs": {
       "images": { "name": "图像" },
-      "gap_size": { "name": "间隔大小" },
+      "gap_size": { "name": "间距大小" },
       "font_size": { "name": "字体大小" },
       "panel_mode": { "name": "显示面板" },
-      "x_attr": { "name": "X轴配置" },
-      "y_attr": { "name": "Y轴配置" }
+      "x_attr": { "name": "X 轴配置" },
+      "y_attr": { "name": "Y 轴配置" }
     }
   },
   "MinimumFilter": {
-    "display_name": "最小值滤镜☀",
+    "display_name": "最小值滤波☀",
     "inputs": {
       "image": { "name": "图像" },
       "radius": { "name": "半径" }
     }
   },
   "ZImageLoraModelOnly": {
-    "display_name": "LoRA加载器（Z-Image，仅模型）☀",
+    "display_name": "LoRA 加载器（Z-Image，仅模型）☀",
     "inputs": {
       "model": { "name": "模型" },
       "lora_name": { "name": "LoRA 名称" },

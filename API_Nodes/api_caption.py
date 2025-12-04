@@ -33,9 +33,18 @@ class API_caption:
                 "API_Key": ("STRING", {"default": "<your_key>"}),
                 "model_name": ("STRING", {"default": "Qwen/Qwen3-VL-32B-Instruct"}),
                 "image": ("IMAGE",),
-                "prompt": ("STRING", {"default": "你是一位专业的AI图像生成提示词工程师。请详细描述这张图像的主体、前景、中景、背景、构图、视觉引导、色调、光影氛围等细节并创作出具有深度、氛围和艺术感的图像提示词。要求：中文提示词，不要出现对图像水印的描述，不要出现无关的文字和符号，不需要总结，限制在800字以内。", "multiline": True, "rows": 4}),
+                "prompt": (
+                    "STRING",
+                    {
+                        "default": "你是一位专业的AI图像生成提示词工程师。请详细描述这张图像的主体、前景、中景、背景、构图、视觉引导、色调、光影氛围等细节并创作出具有深度、氛围和艺术感的图像提示词。要求：中文提示词，不要出现对图像水印的描述，不要出现无关的文字和符号，不需要总结，限制在800字以内。",
+                        "multiline": True,
+                        "rows": 4,
+                    },
+                ),
                 "output_language": (["中文", "英文"], {"default": "中文"}),
                 "temperature": ("FLOAT", {"default": 0.5, "min": 0.0, "max": 2.0, "step": 0.01}),
+                # 使用 control_after_generate 支持 fixed / increment / decrement / randomize 等控制选项
+                "noise_seed": ("INT", {"default": 0, "min": 0, "max": 0xffffffffffffffff, "control_after_generate": True}),
             }
         }
 
@@ -44,8 +53,18 @@ class API_caption:
     FUNCTION = "generate"
     CATEGORY = "DaNodes/API"
 
-    def generate(self, api_type: str, API_Key: str, model_name: str, image: torch.Tensor, prompt: str,
-                 output_language: str, temperature: float = 0.5, api_url: str = "") -> Tuple[str]:
+    def generate(
+        self,
+        api_type: str,
+        API_Key: str,
+        model_name: str,
+        image: torch.Tensor,
+        prompt: str,
+        output_language: str,
+        temperature: float = 0.5,
+        api_url: str = "",
+        noise_seed: int = 0,
+    ) -> Tuple[str]:
         try:
             # 复用 HTTP 连接以减少握手开销
             session = getattr(self, "_session", None)
@@ -93,7 +112,19 @@ class API_caption:
                 }
             ]
 
-            payload = {"model": model_name, "stream": False, "messages": messages, "max_tokens": 400, "temperature": float(temperature)}
+            payload = {
+                "model": model_name,
+                "stream": False,
+                "messages": messages,
+                "max_tokens": 400,
+                "temperature": float(temperature),
+            }
+            # 如果后端支持 seed 字段，则可用此随机种子控制多次运行的一致性/随机性
+            try:
+                payload["seed"] = int(noise_seed)
+            except Exception:
+                pass
+
             headers = {
                 "Authorization": f"Bearer {API_Key}",
                 "Content-Type": "application/json",
@@ -101,7 +132,7 @@ class API_caption:
                 "User-Agent": "ComfyUI-DaNodes/1.0",
             }
 
-            # 固定使用硅基流动式 JSON 风格请求，遇到 429/5xx/读超时简单重试一次
+            # 固定使用统一 JSON 风格请求，遇到 429/5xx/读超时简单重试一次
             r = None
             last_err = None
             for attempt in range(2):
@@ -135,7 +166,7 @@ class API_caption:
             except Exception as e:
                 return (f"无法解析 API 返回的 JSON: {e}; body: {r.text}",)
 
-            # 提取文本回复的帮助函数
+            # 提取文本回复
             def extract_text_from_content(content):
                 if isinstance(content, str):
                     return content
