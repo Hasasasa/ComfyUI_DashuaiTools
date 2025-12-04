@@ -12,7 +12,7 @@
       "temperature": { "name": "温度" }
     }
   },
-  "batch_api_caption": {
+  "Batch_API_caption": {
     "display_name": "API 批量打标☀",
     "inputs": {
       "input_dir": { "name": "输入地址" },
