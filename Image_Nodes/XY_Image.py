@@ -38,8 +38,8 @@ class XYImage:
                 "gap_size": ("INT", {"default": 10, "min": 5, "max": 1000, "step": 5}),
                 "font_size": ("INT", {"default": 50, "min": 50, "max": 250, "step": 1}),
                 "panel_mode": (["XY Plot", "X:Y", "Y:X"],),
-                "x_attr": ("STRING", {"default": "", "multiline": True, "placeholder": "右键唤起参数浮窗\nX轴配置: <x:Label>[node_id:input]='value'"}),
-                "y_attr": ("STRING", {"default": "", "multiline": True, "placeholder": "右键唤起参数浮窗\nY轴配置: <y:Label>[node_id:input]='value'"}),
+                "x_attr": ("STRING", {"default": "", "multiline": True, "placeholder": "右键唤起参数浮窗\nX轴配置\nRight-click to open the parameter pop-up window\nX-axis configuration: <x:Label>[node_id:input]='value'"}),
+                "y_attr": ("STRING", {"default": "", "multiline": True, "placeholder": "右键唤起参数浮窗\nY轴配置\nRight-click to open the parameter pop-up window\nY-axis configuration: <y:Label>[node_id:input]='value'"}),
             },
             "hidden": {
                 "prompt": "PROMPT",

@@ -14,12 +14,12 @@ class Batch_API_caption:
             "required": {
                 "input_dir": ("STRING", {"default": ""}),
                 "output_dir": ("STRING", {"default": ""}),
-                "api_type": (["硅基流动", "贞贞工坊", "OpenRouter", "其他"], {"default": "硅基流动"}),
+                "api_type": (["Siliconflow", "T8zhenzhen", "OpenRouter", "Other"], {"default": "Siliconflow"}),
                 "api_url": ("STRING", {"default": "<url>"}),
                 "API_Key": ("STRING", {"default": "<your_key>"}),
                 "model_name": ("STRING", {"default": "Qwen/Qwen3-VL-32B-Instruct"}),
-                "prompt": ("STRING", {"default": "你是一位专业的AI图像生成提示词工程师。请详细描述这张图像的主体、前景、中景、背景、构图、视觉引导、色调、光影氛围等细节并创作出具有深度、氛围和艺术感的图像提示词。要求：中文提示词，不要出现对图像水印的描述，不要出现无关的文字和符号，不需要总结，限制在800字以内", "multiline": True, "rows": 4}),
-                "output_language": (["中文", "英文"], {"default": "中文"}),
+                "prompt": ("STRING", {"default": "You are a professional AI image generation prompt engineer. Please describe in detail the main body, foreground, mid-ground, background, composition, visual guidance, color tone, and light and shadow atmosphere of this image, and create an image prompt with depth, atmosphere, and artistic appeal. Requirements: Chinese prompt, no description of image watermark, no irrelevant words or symbols, no summary, limited to 800 words.", "multiline": True, "rows": 4}),
+                "output_language": (["Chinese", "English"], {"default": "Chinese"}),
                 "temperature": ("FLOAT", {"default": 0.5, "min": 0.0, "max": 2.0, "step": 0.01}),
                 "concurrency": ("INT", {"default": 6, "min": 1, "max": 32}),
             }
@@ -159,10 +159,10 @@ class Batch_API_caption:
         # 选择 URL
         provider_map = {
             "OpenRouter": "https://openrouter.ai/api/v1/chat/completions",
-            "硅基流动": "https://api.siliconflow.cn/v1/chat/completions",
-            "贞贞工坊": "https://api.bltcy.ai/v1/chat/completions",
+            "Siliconflow": "https://api.siliconflow.cn/v1/chat/completions",
+            "T8zhenzhen": "https://api.bltcy.ai/v1/chat/completions",
         }
-        if api_type == "其他":
+        if api_type == "Other":
             api_url = api_url or ""
         else:
             api_url = provider_map.get(api_type, api_url)
@@ -194,8 +194,8 @@ class Batch_API_caption:
                 )
                 img_data_uri = f"data:{mime};base64,{img_b64}"
 
-                if output_language == "中文":
-                    prompt_full = f"{prompt} 请用中文返回描述"
+                if output_language == "Chinese":
+                    prompt_full = f"{prompt} 请用Chinese返回描述"
                 else:
                     prompt_full = f"{prompt} Please return the description in English."
 

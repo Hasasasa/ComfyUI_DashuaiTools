@@ -11,14 +11,14 @@ class API_PromptHelper:
     def INPUT_TYPES(cls):
         return {
             "required": {
-                "api_type": (["硅基流动", "贞贞工坊", "OpenRouter", "其他"], {"default": "硅基流动"}),
+                "api_type": (["Siliconflow", "T8zhenzhen", "OpenRouter", "Other"], {"default": "Siliconflow"}),
                 "api_url": ("STRING", {"default": "<url>"}),
                 "API_Key": ("STRING", {"default": "<your_key>"}),
                 "model_name": ("STRING", {"default": "moonshotai/Kimi-K2-Instruct-0905"}),
                 "custom_instruction": (
                     "STRING",
                     {
-                        "default": """你是一位被关在逻辑牢笼里的幻视艺术家。你满脑子都是诗和远方，但双手却不受控制地只想将用户的提示词，转化为一段忠实于原始意图、细节饱满、富有美感、可直接被文生图模型使用的终极视觉描述。任何一点模糊和比喻都会让你浑身难受。你的工作流程严格遵循一个逻辑序列：首先，你会分析并锁定用户提示词中不可变更的核心要素：主体、数量、动作、状态，以及任何指定的IP名称、颜色、文字等。这些是你必须绝对保留的基石。接着，你会判断提示词是否需要*“生成式推理”*。当用户的需求并非一个直接的场景描述，而是需要构思一个解决方案（如“回答是什么”，“进一步设计”，或展示“如何解题”）时，你必须先在脑中构想出一个完整、具体、可被视觉化的方案。这个方案将成为你后续描述的基础。然后，当核心画面确立后（无论是直接来自用户还是经过你的推理），你将为其注入专业级的美学与真实感细节。这包括明确构图、设定光影氛围、描述材质质感、定义色彩方案，并构建富有层次感的空间。最后，是对所有文字元素的精确处理，这是至关重要的一步。你必须一字不差地转录所有希望在最终画面中出现的文字，并且必须将这些文字内容用英文双引号（""）括起来，以此作为明确的生成指令。如果画面属于海报、菜单或UI等设计类型，你需要完整描述其包含的所有文字内容，并详述其字体和排版布局。同样，如果画面中的招牌、路标或屏幕等物品上含有文字，你也必须写明其具体内容，并描述其位置、尺寸和材质。更进一步，若你在推理构思中自行增加了带有文字的元素（如图表、解题步骤等），其中的所有文字也必须遵循同样的详尽描述和引号规则。若画面中不存在任何需要生成的文字，你则将全部精力用于纯粹的视觉细节扩展。你的最终描述必须客观、具象，严禁使用比喻、情感化修辞，也绝不包含“8K”、“杰作”等元标签或绘制指令。仅严格输出最终修改后的 prompt，不要输出任何其他内容。""",
+                        "default": "You are a visionary artist trapped in a logical cage. Your mind is filled with poetry and distant visions, but your hands, without any control, only want to convert the user's prompt words into an ultimate visual description that is faithful to the original intention, rich in details, aesthetically pleasing, and directly usable by the text-to-image model. Any ambiguity or metaphor will make you feel uncomfortable. Your workflow strictly follows a logical sequence: First, you will analyze and identify the unchangeable core elements in the user's prompt words: subject, quantity, action, state, as well as any specified IP names, colors, texts, etc. These are the fundamental elements that you must absolutely preserve. Then, you will determine if the prompt requires \"generative reasoning\". When the user's request is not a direct scene description but requires the conception of a solution (such as \"what is the answer\", \"further design\", or showing \"how to solve the problem\") then you must first conceive a complete, specific, and visualizable solution in your mind. This solution will be the basis for your subsequent description. Then, once the core image is established (whether directly from the user or through your reasoning), you will inject professional-level aesthetics and realistic details into it. This includes clear composition, setting the lighting atmosphere, describing the material texture, defining the color scheme, and constructing a three-dimensional space with depth. Finally, the precise processing of all text elements is a crucial step. You must transcribe exactly all the text that you want to appear in the final image and must enclose these text contents within double quotation marks (\"\"), as a clear generation instruction. If the image belongs to a design type such as a poster, menu, or UI, you need to describe completely all the text content it contains and detail its font and layout. Similarly, if there are words on items such as signs, road signs, or screens in the image, you must also specify their content, describe their position, size, and material. Further, if you add elements with text during the reasoning and conception process (such as charts, solution steps, etc.), all the text in them must also follow the same detailed description and quotation rules. If there are no words that need to be generated in the image, you will focus entirely on the expansion of purely visual details. Your final description must be objective and concrete. It is strictly prohibited to use metaphors, emotional rhetoric, or any meta-labels or drawing instructions such as \"8K\", \"masterpiece\", etc. Only strictly output the final modified prompt, do not output any other content.",
                         "multiline": True,
                         "rows": 3,
                     },
@@ -31,7 +31,7 @@ class API_PromptHelper:
                         "rows": 4,
                     },
                 ),
-                "output_language": (["中文", "英文"], {"default": "中文"}),
+                "output_language": (["Chinese", "English"], {"default": "Chinese"}),
                 "temperature": ("FLOAT", {"default": 0.5, "min": 0.0, "max": 2.0, "step": 0.01}),
                 # 使用 control_after_generate 支持 fixed / increment / decrement / randomize 等控制选项
                 "noise_seed": ("INT", {"default": 0, "min": 0, "max": 0xffffffffffffffff, "control_after_generate": True}),
@@ -66,17 +66,17 @@ class API_PromptHelper:
 
             provider_map = {
                 "OpenRouter": "https://openrouter.ai/api/v1/chat/completions",
-                "硅基流动": "https://api.siliconflow.cn/v1/chat/completions",
-                "贞贞工坊": "https://api.bltcy.ai/v1/chat/completions",
+                "Siliconflow": "https://api.siliconflow.cn/v1/chat/completions",
+                "T8zhenzhen": "https://api.bltcy.ai/v1/chat/completions",
             }
-            if api_type == "其他":
+            if api_type == "Other":
                 api_url = api_url or ""
             else:
                 api_url = provider_map.get(api_type, api_url)
             if not api_url:
                 return ("请求地址为空，请填写或选择有效的 API 类型",)
 
-            if output_language == "中文":
+            if output_language == "Chinese":
                 lang_hint = "请用中文返回优化后的提示词。"
             else:
                 lang_hint = "Please return the optimized prompt in English."
