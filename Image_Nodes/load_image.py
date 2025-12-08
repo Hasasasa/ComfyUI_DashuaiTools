@@ -29,7 +29,7 @@ class LoadImageList:
                     "max": 1000,
                     "step": 1
                 }),
-                "sort_mode": (["无", "Alphabetical (ASC)", "Alphabetical (DESC)", 
+                "sort_mode": (["None", "Alphabetical (ASC)", "Alphabetical (DESC)", 
                                "Numerical (ASC)", "Numerical (DESC)",
                                "Datetime (ASC)", "Datetime (DESC)"],),
                 "always_reload": ("BOOLEAN", {"default": False}),
@@ -43,7 +43,7 @@ class LoadImageList:
     CATEGORY = "Image/Load"
     OUTPUT_NODE = True
 
-    def load_images(self, folder_path, max_output=0, start_index=0, sort_mode="无", always_reload=False):
+    def load_images(self, folder_path, max_output=0, start_index=0, sort_mode="None", always_reload=False):
         try:
             # 确保文件夹路径存在
             if not os.path.exists(folder_path):
@@ -55,7 +55,7 @@ class LoadImageList:
                 image_files.extend(glob.glob(os.path.join(folder_path, ext)))
                 
             # 根据排序方法对文件列表进行排序
-            if sort_mode != "无":
+            if sort_mode != "None":
                 if "Alphabetical" in sort_mode:
                     image_files.sort(reverse="DESC" in sort_mode)
                 elif "Numerical" in sort_mode:

@@ -95,5 +95,15 @@
       "lora_name": { "name": "LoRA 名称" },
       "strength_model": { "name": "模型强度" }
     }
+  },
+  "LoadTextList": {
+    "display_name": "批量加载文本☀",
+    "inputs": {
+      "folder_path": { "name": "文件夹路径" },
+      "max_output": { "name": "最大输出数量" },
+      "start_index": { "name": "起始索引" },
+      "sort_mode": { "name": "排序模式" },
+      "always_reload": { "name": "总是重新加载" }
+    }
   }
 }

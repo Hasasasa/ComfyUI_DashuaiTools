@@ -3,13 +3,13 @@
 
 ## Image_Nodes
 
-- **图像滑动对比GIF**  
+- **图像滑动对比GIF（ImageComparisonGIF）**  
   输入两张图像，生成左右滑动对比的 GIF 动图。支持自定义帧数，自动保存到 ComfyUI 的 `output` 目录并智能避免文件重名。
 
-- **批量加载图像**  
+- **批量加载图像（LoadImageList）**  
   从指定文件夹批量加载图像，支持按字母顺序、数字顺序或文件时间升/降序排序，可设置起始索引与最大输出数量，并同时输出文件名列表，便于后续批处理和记录。
 
-- **保存图像（自定义名）**  
+- **保存图像，自定义名（SaveImageWithName）**  
   将单张或多张图像保存到指定路径，支持自定义文件名和附加后缀，自动补全扩展名并生成不重名的唯一文件，处理 EXIF 方向信息，避免保存后图片方向错误。
 
 - **XY测试图（XY_Image）**  
@@ -17,23 +17,27 @@
 
 ## PS_Nodes
 
-- **最小值滤镜**  
+- **最小值滤镜（MinimumFilter）**  
   对标 Photoshop 的最小值滤镜，基于 skimage 的 rank minimum 算法实现。可自定义半径，对单张或批量图像进行暗化/膨胀式滤波处理，常用于抠图、细节压缩等前处理场景。
 
 ## API_Nodes
 
-- **API 打标**  
+- **API 打标（api_caption）**  
   使用多模态对话接口为单张图片生成描述/提示词，兼容 OpenAI 标准协议，内置多家 API 配置（硅基流动、贞贞工坊、OpenRouter），支持自定义模型、温度和提示词，可选择中文或英文输出，并带有简单重试与错误信息回传。
 
-- **API 批量打标**  
+- **API 批量打标（batch_api_caption）**  
   批量处理文件夹中的图片，调用多模态 API 并发生成描述并逐张写入同名 txt 文件。支持自定义输入/输出目录、模型、提示词、输出语言和并发数量，自动统计成功/失败数量并返回结构化日志，适合大规模数据集打标。
 
- - **API 提示词助手☀ (API_PromptHelper)**  
+- **API 提示词助手（API_PromptHelper）**  
   针对文本提示词优化 / 润色 / 补全的专用节点，基于自定义的 system 提示 `custom_instruction` 约束画面要素、构图、光影、文字内容等规则，再将“用户输入 prompt”拼接后发送给模型，返回可直接用于文生图模型的最终视觉描述。
+
 ## Tools
 
 - **ZImageLoraModelOnly**  
   基于官方 LoRA Model-Only Loader 和PGCRT/CRT-Nodes/blob/main/py/LoraLoaderZImage.py改写的 Z-Image 专用加载器，用于加载融合 Q/K/V 的 Z-Image LoRA 权重，并仅作用于模型分支（MODEL），不影响 CLIP 编码器。支持直接选择已有 LoRA 文件并调整模型强度，适合作为 Z-Image 系列模型的专用 LoRA 入口。
+
+- **批量加载文本（LoadTextList）**  
+  从指定文件夹中批量读取 `.txt` 文本文件。支持按字母顺序、数字顺序或文件修改时间升/降序排序，可设置起始索引与最大输出数量，并同时输出文本内容列表和对应的文件名列表。内部优先尝试 UTF-8 解码，若失败则依次尝试常见中文编码（GBK/GB2312/BIG5），在全部失败时回退为原始字节的 `repr` 字符串，适合应对混合编码的数据集文本加载场景。
 
 ## Video_Nodes
 
@@ -46,3 +50,4 @@
 https://space.bilibili.com/85024828
 
 ---
+
