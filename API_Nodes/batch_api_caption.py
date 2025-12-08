@@ -67,7 +67,7 @@ class Batch_API_caption:
             "model": model_name,
             "stream": False,
             "messages": messages,
-            "max_tokens": 0,
+            "max_tokens": 4096,
             "temperature": float(temperature),
         }
 
