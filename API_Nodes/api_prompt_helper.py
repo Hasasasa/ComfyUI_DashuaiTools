@@ -93,7 +93,7 @@ class API_PromptHelper:
                 "model": model_name,
                 "stream": False,
                 "messages": messages,
-                "max_tokens": 4096,
+                "max_tokens": 2048,
                 "temperature": float(temperature),
             }
             # 如果后端支持 seed 字段，则可用此随机种子控制多次运行时的一致性/随机性

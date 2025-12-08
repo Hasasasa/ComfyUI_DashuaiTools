@@ -25,8 +25,8 @@ class Batch_API_caption:
             }
         }
 
-    RETURN_TYPES = ("STRING",)
-    RETURN_NAMES = ("log",)
+    RETURN_TYPES = ("STRING", "STRING")
+    RETURN_NAMES = ("log", "save_path")
     FUNCTION = "generate"
     CATEGORY = "DaNodes/API"
 
@@ -67,7 +67,7 @@ class Batch_API_caption:
             "model": model_name,
             "stream": False,
             "messages": messages,
-            "max_tokens": 4096,
+            "max_tokens": 2048,
             "temperature": float(temperature),
         }
 
@@ -146,12 +146,15 @@ class Batch_API_caption:
 
     def generate(self, input_dir: str, output_dir: str, api_type: str, api_url: str, API_Key: str, model_name: str,
                  prompt: str, output_language: str, temperature: float = 0.5,
-                 concurrency: int = 4) -> Tuple[str]:
+                 concurrency: int = 4) -> Tuple[str, str]:
         # 目录校验
         if not input_dir:
-            return ("输入地址未填写",)
+            return ("输入地址未填写", output_dir)
         if not os.path.isdir(input_dir):
-            return (f"输入地址不存在: {input_dir}",)
+            return (f"输入地址不存在: {input_dir}", output_dir)
+        # API Key 校验：为空或仍为默认占位时直接报错
+        if not API_Key or API_Key.strip() in ("<your_key>", "your_key", "请输入你的 Key"):
+            return ("API 密钥未填写，请在节点中填写有效的 API_Key 后再运行", output_dir)
         if not output_dir:
             output_dir = input_dir
         os.makedirs(output_dir, exist_ok=True)
@@ -167,13 +170,13 @@ class Batch_API_caption:
         else:
             api_url = provider_map.get(api_type, api_url)
         if not api_url:
-            return ("请求地址为空，请填写或选择有效的 API 类型",)
+            return ("请求地址为空，请填写或选择有效的 API 类型", output_dir)
 
         # 列出图片
         exts = (".jpg", ".jpeg", ".png", ".bmp", ".webp")
         files = [f for f in os.listdir(input_dir) if f.lower().endswith(exts)]
         if not files:
-            return ("输入地址中没有图片文件",)
+            return ("输入地址中没有图片文件", output_dir)
 
         log = {"total": len(files), "succeeded": 0, "failed": 0}
         first_error = None  # type: ignore[assignment]
@@ -231,7 +234,7 @@ class Batch_API_caption:
 
         if first_error is not None:
             log["error"] = first_error
-        return (json.dumps(log, ensure_ascii=False),)
+        return (json.dumps(log, ensure_ascii=False), output_dir)
 
 
 NODE_CLASS_MAPPINGS = {
