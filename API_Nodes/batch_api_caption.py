@@ -21,6 +21,7 @@ class Batch_API_caption:
                 "prompt": ("STRING", {"default": "You are a professional AI image generation prompt engineer. Please describe in detail the main body, foreground, mid-ground, background, composition, visual guidance, color tone, and light and shadow atmosphere of this image, and create an image prompt with depth, atmosphere, and artistic appeal. Requirements: Chinese prompt, no description of image watermark, no irrelevant words or symbols, no summary, limited to 800 words.", "multiline": True, "rows": 4}),
                 "output_language": (["Chinese", "English"], {"default": "Chinese"}),
                 "temperature": ("FLOAT", {"default": 0.5, "min": 0.0, "max": 2.0, "step": 0.01}),
+                "max_tokens": ("INT", {"default": 258, "min": 125, "max": 4096}),
                 "concurrency": ("INT", {"default": 6, "min": 1, "max": 32}),
             }
         }
@@ -53,7 +54,7 @@ class Batch_API_caption:
         return str(content)
 
     @staticmethod
-    def _build_payload(model_name: str, prompt_full: str, img_data_uri: str, temperature: float):
+    def _build_payload(model_name: str, prompt_full: str, img_data_uri: str, temperature: float, max_tokens: int):
         messages = [
             {
                 "role": "user",
@@ -67,7 +68,7 @@ class Batch_API_caption:
             "model": model_name,
             "stream": False,
             "messages": messages,
-            "max_tokens": 2048,
+            "max_tokens": int(max_tokens),
             "temperature": float(temperature),
         }
 
@@ -145,7 +146,7 @@ class Batch_API_caption:
         return True, caption
 
     def generate(self, input_dir: str, output_dir: str, api_type: str, api_url: str, API_Key: str, model_name: str,
-                 prompt: str, output_language: str, temperature: float = 0.5,
+                 prompt: str, output_language: str, temperature: float = 0.5, max_tokens: int = 512,
                  concurrency: int = 4) -> Tuple[str, str]:
         # 目录校验
         if not input_dir:
@@ -202,7 +203,7 @@ class Batch_API_caption:
                 else:
                     prompt_full = f"{prompt} Please return the description in English."
 
-                payload = self._build_payload(model_name, prompt_full, img_data_uri, temperature)
+                payload = self._build_payload(model_name, prompt_full, img_data_uri, temperature, max_tokens)
                 ok, resp = self._post(api_url, API_Key, payload, timeout_sec=90.0, retries=1)
 
                 if ok:

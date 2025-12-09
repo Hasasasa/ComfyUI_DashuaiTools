@@ -33,6 +33,7 @@ class API_PromptHelper:
                 ),
                 "output_language": (["Chinese", "English"], {"default": "Chinese"}),
                 "temperature": ("FLOAT", {"default": 0.5, "min": 0.0, "max": 2.0, "step": 0.01}),
+                "max_tokens": ("INT", {"default": 258, "min": 125, "max": 4096}),
                 # 使用 control_after_generate 支持 fixed / increment / decrement / randomize 等控制选项
                 "noise_seed": ("INT", {"default": 0, "min": 0, "max": 0xffffffffffffffff, "control_after_generate": True}),
             }
@@ -52,6 +53,7 @@ class API_PromptHelper:
         prompt: str,
         output_language: str,
         temperature: float = 0.5,
+        max_tokens: int = 512,
         api_url: str = "",
         noise_seed: int = 0,
     ) -> Tuple[str]:
@@ -93,7 +95,7 @@ class API_PromptHelper:
                 "model": model_name,
                 "stream": False,
                 "messages": messages,
-                "max_tokens": 2048,
+                "max_tokens": int(max_tokens),
                 "temperature": float(temperature),
             }
             # 如果后端支持 seed 字段，则可用此随机种子控制多次运行时的一致性/随机性
