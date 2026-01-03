@@ -3,6 +3,9 @@
 
 ## Image_Nodes
 
+- **getImageRetio**  
+  Computes the simplified aspect ratio of an input image (e.g. 3:4). Outputs the ratio string plus numeric width/height ratios for reuse in other nodes.
+
 - **ImageComparisonGIF**  
   Takes two images and creates a left–right sliding comparison GIF. Supports custom frame count, automatically saves to the ComfyUI `output` folder and avoids filename collisions by adding numeric suffixes.
 
@@ -21,6 +24,9 @@
   A Photoshop‑style minimum filter implemented with `skimage`’s rank minimum operator. Radius is configurable and it works on single images or batches, useful for pre‑processing tasks such as matte refinement or detail suppression.
 
 ## API_Nodes
+
+- **Gemini_API_Image**  
+  Calls Gemini image generation with optional reference images (up to 14). Supports aspect ratio, resolution, and seed control, and returns both the generated image and any text response.
 
 - **api_caption**  
   Uses a multimodal chat API to generate descriptions/prompts for a single image. Compatible with the OpenAI‑style API schema and supports multiple providers (Siliconflow, ZhenZhen Workshop, OpenRouter). You can customize model name, temperature and base prompt, choose Chinese or English output, and get basic retry + error reporting.

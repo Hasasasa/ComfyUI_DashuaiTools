@@ -9,7 +9,7 @@ def _get_first_image(image):
     return image
 
 
-class ImageRetio:
+class getImageRetio:
     @classmethod
     def INPUT_TYPES(cls):
         return {
@@ -47,8 +47,8 @@ class ImageRetio:
 
 
 NODE_CLASS_MAPPINGS = {
-    "ImageRetio": ImageRetio,
+    "getImageRetio": getImageRetio,
 }
 NODE_DISPLAY_NAME_MAPPINGS = {
-    "ImageRetio": "ImageRetio☀",
+    "getImageRetio": "getImageRetio☀",
 }

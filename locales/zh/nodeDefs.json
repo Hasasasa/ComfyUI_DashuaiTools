@@ -42,6 +42,32 @@
       "noise_seed": { "name": "噪波随机种" }
     }
   },
+  "Gemini_API_Image": {
+    "display_name": "Gemini 图像生成☀",
+    "inputs": {
+      "API_Key": { "name": "API 密钥" },
+      "prompt": { "name": "提示词" },
+      "model_name": { "name": "模型名称" },
+      "aspect_ratio": { "name": "比例（下拉）" },
+      "aspect_ratio_text": { "name": "比例（输入）" },
+      "resolution": { "name": "分辨率" },
+      "noise_seed": { "name": "噪波随机种子" },
+      "image_1": { "name": "参考图1" },
+      "image_2": { "name": "参考图2" },
+      "image_3": { "name": "参考图3" },
+      "image_4": { "name": "参考图4" },
+      "image_5": { "name": "参考图5" },
+      "image_6": { "name": "参考图6" },
+      "image_7": { "name": "参考图7" },
+      "image_8": { "name": "参考图8" },
+      "image_9": { "name": "参考图9" },
+      "image_10": { "name": "参考图10" },
+      "image_11": { "name": "参考图11" },
+      "image_12": { "name": "参考图12" },
+      "image_13": { "name": "参考图13" },
+      "image_14": { "name": "参考图14" }
+    }
+  },
   "ImageComparisonGIF": {
     "display_name": "图像滑动对比GIF ☀",
     "inputs": {
@@ -79,6 +105,12 @@
       "panel_mode": { "name": "显示面板" },
       "x_attr": { "name": "X 轴配置" },
       "y_attr": { "name": "Y 轴配置" }
+    }
+  },
+  "getImageRetio": {
+    "display_name": "获取图片比例☀",
+    "inputs": {
+      "image": { "name": "图片" }
     }
   },
   "MinimumFilter": {
