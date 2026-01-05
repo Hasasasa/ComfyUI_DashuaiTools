@@ -1,4 +1,4 @@
-# ComfyUI DashuaiTools �?Node Overview
+# ComfyUI DashuaiTools Node Overview
 [English](README.md)  | [简体中文](README_CN.md)
 
 ## Image_Nodes
@@ -16,7 +16,7 @@
   Saves one or multiple images to a given path with custom filenames and optional suffix. Automatically fills in missing extensions, generates unique filenames to avoid overwriting, and handles EXIF orientation to prevent rotated outputs.
 
 - **XY_Image (XY chart)**  
-  A standalone XY Plot–style node for ComfyUI. It hooks into the entire workflow graph: you define X/Y axes as parameter overrides (prompt, CFG, seed, etc.), and it executes combinations to build comparison grids. It uses content hashing and a global cache so that only changes in upstream nodes or XY configuration trigger re‑execution; layout tweaks (gap, font size, layout mode) reuse cached results, giving a “dashboard‑like�?refresh experience. Supports three layouts: “XY Plot / X:Y / Y:X�? with flexible labels and axis configuration, ideal for large workflows and parameter sweeps.
+  A standalone XY Plot–style node for ComfyUI. It hooks into the entire workflow graph: you define X/Y axes as parameter overrides (prompt, CFG, seed, etc.), and it executes combinations to build comparison grids. It uses content hashing and a global cache so that only changes in upstream nodes or XY configuration trigger re‑execution; layout tweaks (gap, font size, layout mode) reuse cached results, giving a dashboard-like refresh experience. Supports three layouts: "XY Plot / X:Y / Y:X" with flexible labels and axis configuration, ideal for large workflows and parameter sweeps.
 
 ## PS_Nodes
 
@@ -37,7 +37,7 @@
 ## Tools
 
 - **ZImageLoraModelOnly**  
-  A Z‑Image–specific LoRA loader based on the official “LoRA Model‑Only Loader�?and PGCRT/CRT-Nodes/blob/main/py/LoraLoaderZImage.py, rewritten. It loads Q/K/V‑fused Z‑Image LoRA weights and applies them only to the MODEL branch (leaving CLIP untouched). You can pick any existing LoRA by filename and adjust the model strength; recommended as the dedicated LoRA entry point for Z‑Image pipelines.
+  A Z‑Image–specific LoRA loader based on the official "LoRA Model-Only Loader" and PGCRT/CRT-Nodes/blob/main/py/LoraLoaderZImage.py, rewritten. It loads Q/K/V‑fused Z‑Image LoRA weights and applies them only to the MODEL branch (leaving CLIP untouched). You can pick any existing LoRA by filename and adjust the model strength; recommended as the dedicated LoRA entry point for Z‑Image pipelines.
   
 - **LoadTextList**  
   Loads `.txt` files from a folder in batch. Supports alphabetical / numerical / datetime sorting with start index and maximum count, and outputs a list of text contents together with their filenames. Internally it tries UTF-8 first and then common Chinese encodings (GBK/GB2312/BIG5), falling back to a raw-bytes `repr` string if decoding fails, which makes it robust for mixed-encoding text datasets.
