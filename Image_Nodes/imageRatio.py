@@ -1,4 +1,5 @@
 import torch
+from fractions import Fraction
 
 
 def _get_first_image(image):
@@ -38,11 +39,12 @@ class getImageRetio:
             h, w = arr.shape[0], arr.shape[1]
         if h == 0:
             return ("invalid image height", 0, 0)
-        g = int(torch.gcd(torch.tensor(w), torch.tensor(h)))
-        if g <= 0:
-            return ("invalid image size", 0, 0)
-        w_ratio = int(w // g)
-        h_ratio = int(h // g)
+        if w == 0:
+            return ("invalid image width", 0, 0)
+        ratio = w / h
+        frac = Fraction(ratio).limit_denominator(100)
+        w_ratio = int(frac.numerator)
+        h_ratio = int(frac.denominator)
         return (f"{w_ratio}:{h_ratio}", w_ratio, h_ratio)
 
 
