@@ -1,6 +1,10 @@
 # ComfyUI DashuaiTools Node Overview
 [English](README.md)  | [简体中文](README_CN.md)
 
+## Plugin Intro Video
+YouTube: https://youtu.be/hNIKSPjLhIc  
+Bilibili: https://www.bilibili.com/video/BV1Fq6SBkEm6
+
 ## Image_Nodes
 
 - **getImageRetio**  

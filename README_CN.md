@@ -1,6 +1,10 @@
 # ComfyUI DashuaiTools 节点功能说明
 [English](README.md) | [简体中文](README_CN.md)
 
+## 插件介绍视频
+YouTube：https://youtu.be/hNIKSPjLhIc  
+Bilibili：https://www.bilibili.com/video/BV1Fq6SBkEm6
+
 ## Image_Nodes
 
 - **获取图片比例（getImageRetio）**  
