@@ -49,6 +49,9 @@ Bilibili: https://www.bilibili.com/video/BV1Fq6SBkEm6
 - **LoadTextList**  
   Loads `.txt` files from a folder in batch. Supports alphabetical / numerical / datetime sorting with start index and maximum count, and outputs a list of text contents together with their filenames. Internally it tries UTF-8 first and then common Chinese encodings (GBK/GB2312/BIG5), falling back to a raw-bytes `repr` string if decoding fails, which makes it robust for mixed-encoding text datasets.
 
+- **qwenMultiAngles**  
+  Builds a prompt in the format: `<sks> {azimuth} {elevation} {distance}` (e.g. `<sks> front view eye-level shot medium shot`).
+
 ## Video_Nodes
 
 - **(Reserved)**  
@@ -58,6 +61,9 @@ Bilibili: https://www.bilibili.com/video/BV1Fq6SBkEm6
 
 More examples and tutorials (Chinese) on Bilibili:  
 https://space.bilibili.com/85024828
+
+YouTube:
+https://www.youtube.com/channel/UCqUEZlzmcEXKdU5zgnaT4Ig
 
 ---
 

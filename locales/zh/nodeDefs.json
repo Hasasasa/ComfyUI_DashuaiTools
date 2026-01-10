@@ -143,6 +143,14 @@
       "sort_mode": { "name": "排序模式" },
       "always_reload": { "name": "总是重新加载" }
     }
+  },
+  "qwenMultiAngles": {
+    "display_name": "qwen 多角度提示词☀",
+    "inputs": {
+      "prefix": { "name": "前缀" },
+      "azimuth": { "name": "视角方位" },
+      "elevation": { "name": "镜头角度" },
+      "distance": { "name": "景别" }
+    }
   }
 }
-

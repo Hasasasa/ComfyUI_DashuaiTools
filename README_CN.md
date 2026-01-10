@@ -52,6 +52,9 @@ Bilibili：https://www.bilibili.com/video/BV1Fq6SBkEm6
 - **批量加载文本（LoadTextList）**  
   从指定文件夹中批量读取 `.txt` 文本文件。支持按字母顺序、数字顺序或文件修改时间升/降序排序，可设置起始索引与最大输出数量，并同时输出文本内容列表和对应的文件名列表。内部优先尝试 UTF-8 解码，若失败则依次尝试常见中文编码（GBK/GB2312/BIG5），在全部失败时回退为原始字节的 `repr` 字符串，适合应对混合编码的数据集文本加载场景。
 
+- **qwenMultiAngles**  
+  生成提示词格式：`<sks> {视角方位} {镜头角度} {景别}`（示例：`<sks> front view eye-level shot medium shot`）。
+
 ## Video_Nodes
 
 - **（预留）**  
@@ -61,5 +64,8 @@ Bilibili：https://www.bilibili.com/video/BV1Fq6SBkEm6
 
 更多节点演示与教程请访问 B 站：  
 https://space.bilibili.com/85024828
+
+YouTube:
+https://www.youtube.com/channel/UCqUEZlzmcEXKdU5zgnaT4Ig
 
 ---
