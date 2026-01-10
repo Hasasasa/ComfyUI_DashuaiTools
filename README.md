@@ -12,6 +12,9 @@
 - **LoadImageList**  
   Loads images from a folder in batch. Supports sorting by alphabetical order, numeric order, or file modification time (ascending/descending), and lets you set start index and maximum number of outputs. Returns both image tensors and the corresponding filenames for easier batch processing and logging.
 
+- **Load64image**  
+  Loads an image from a Base64 string (supports optional `data:image/...;base64,` prefix) and outputs a ComfyUI `IMAGE` tensor.
+
 - **SaveImageWithName**  
   Saves one or multiple images to a given path with custom filenames and optional suffix. Automatically fills in missing extensions, generates unique filenames to avoid overwriting, and handles EXIF orientation to prevent rotated outputs.
 

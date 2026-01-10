@@ -1,6 +1,6 @@
 {
   "API_caption": {
-    "display_name": "API 标题☀",
+    "display_name": "API 打标☀",
     "inputs": {
       "api_type": { "name": "API 类型" },
       "api_url": { "name": "请求地址" },
@@ -10,14 +10,14 @@
       "prompt": { "name": "提示词" },
       "output_language": { "name": "输出语言" },
       "temperature": { "name": "温度" },
-      "noise_seed": { "name": "噪波随机种" }
+      "noise_seed": { "name": "噪声随机种子" }
     }
   },
   "Batch_API_caption": {
-    "display_name": "API 批量标题☀",
+    "display_name": "API 批量打标☀",
     "inputs": {
-      "input_dir": { "name": "输入地址" },
-      "output_dir": { "name": "输出地址" },
+      "input_dir": { "name": "输入目录" },
+      "output_dir": { "name": "输出目录" },
       "api_type": { "name": "API 类型" },
       "api_url": { "name": "请求地址" },
       "API_Key": { "name": "API 密钥" },
@@ -25,7 +25,7 @@
       "prompt": { "name": "提示词" },
       "output_language": { "name": "输出语言" },
       "temperature": { "name": "温度" },
-      "concurrency": { "name": "并发数" }
+      "concurrency": { "name": "并发数量" }
     }
   },
   "API_PromptHelper": {
@@ -36,10 +36,10 @@
       "API_Key": { "name": "API 密钥" },
       "model_name": { "name": "模型名称" },
       "custom_instruction": { "name": "自定义指令" },
-      "prompt": { "name": "提示词" },
+      "prompt": { "name": "用户提示词" },
       "output_language": { "name": "输出语言" },
       "temperature": { "name": "温度" },
-      "noise_seed": { "name": "噪波随机种" }
+      "noise_seed": { "name": "噪声随机种子" }
     }
   },
   "Gemini_API_Image": {
@@ -51,40 +51,46 @@
       "aspect_ratio": { "name": "比例（下拉）" },
       "aspect_ratio_text": { "name": "比例（输入）" },
       "resolution": { "name": "分辨率" },
-      "noise_seed": { "name": "噪波随机种子" },
-      "image_1": { "name": "参考图1" },
-      "image_2": { "name": "参考图2" },
-      "image_3": { "name": "参考图3" },
-      "image_4": { "name": "参考图4" },
-      "image_5": { "name": "参考图5" },
-      "image_6": { "name": "参考图6" },
-      "image_7": { "name": "参考图7" },
-      "image_8": { "name": "参考图8" },
-      "image_9": { "name": "参考图9" },
-      "image_10": { "name": "参考图10" },
-      "image_11": { "name": "参考图11" },
-      "image_12": { "name": "参考图12" },
-      "image_13": { "name": "参考图13" },
-      "image_14": { "name": "参考图14" }
+      "noise_seed": { "name": "噪声随机种子" },
+      "image_1": { "name": "参考图 1" },
+      "image_2": { "name": "参考图 2" },
+      "image_3": { "name": "参考图 3" },
+      "image_4": { "name": "参考图 4" },
+      "image_5": { "name": "参考图 5" },
+      "image_6": { "name": "参考图 6" },
+      "image_7": { "name": "参考图 7" },
+      "image_8": { "name": "参考图 8" },
+      "image_9": { "name": "参考图 9" },
+      "image_10": { "name": "参考图 10" },
+      "image_11": { "name": "参考图 11" },
+      "image_12": { "name": "参考图 12" },
+      "image_13": { "name": "参考图 13" },
+      "image_14": { "name": "参考图 14" }
     }
   },
   "ImageComparisonGIF": {
-    "display_name": "图像滑动对比GIF ☀",
+    "display_name": "图像滑动对比 GIF☀",
     "inputs": {
-      "image1": { "name": "图像1" },
-      "image2": { "name": "图像2" },
+      "image1": { "name": "图像 1" },
+      "image2": { "name": "图像 2" },
       "frames": { "name": "帧数" },
       "output_path": { "name": "输出路径" }
     }
   },
   "LoadImageList": {
-    "display_name": "批量加载图像 ☀",
+    "display_name": "批量加载图像☀",
     "inputs": {
       "folder_path": { "name": "文件夹路径" },
-      "max_output": { "name": "最大输出数" },
+      "max_output": { "name": "最大输出数量" },
       "start_index": { "name": "起始索引" },
       "sort_mode": { "name": "排序模式" },
       "always_reload": { "name": "总是重新加载" }
+    }
+  },
+  "Load64image": {
+    "display_name": "Base64 加载图像☀",
+    "inputs": {
+      "base64_image": { "name": "Base64 图像" }
     }
   },
   "SaveImageWithName": {
@@ -110,11 +116,11 @@
   "getImageRetio": {
     "display_name": "获取图片比例☀",
     "inputs": {
-      "image": { "name": "图片" }
+      "image": { "name": "图像" }
     }
   },
   "MinimumFilter": {
-    "display_name": "最小值滤波☀",
+    "display_name": "最小值滤镜☀",
     "inputs": {
       "image": { "name": "图像" },
       "radius": { "name": "半径" }
@@ -139,3 +145,4 @@
     }
   }
 }
+
