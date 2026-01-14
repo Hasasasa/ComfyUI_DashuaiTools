@@ -300,14 +300,50 @@ class XYImage:
         w, h = pil_images[0].size
         cols = len(x_labels); rows = len(y_labels)
         
-        font = None
-        try:
-            font_paths = ["simhei.ttf", "Microsoft YaHei.ttf", "arial.ttf", "/System/Library/Fonts/PingFang.ttc", "/usr/share/fonts/truetype/noto/NotoSansCJK-Regular.ttc"]
+        def _load_font(size: int):
+            font_paths = [
+                # Windows
+                "simhei.ttf",
+                "Microsoft YaHei.ttf",
+                "arial.ttf",
+                # macOS
+                "/System/Library/Fonts/PingFang.ttc",
+                # Linux common locations
+                "/usr/share/fonts/truetype/noto/NotoSansCJK-Regular.ttc",
+                "/usr/share/fonts/opentype/noto/NotoSansCJK-Regular.ttc",
+                "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf",
+                "/usr/share/fonts/truetype/dejavu/DejaVuSansMono.ttf",
+            ]
+
             for path in font_paths:
-                try: font = ImageFont.truetype(path, font_size); break
-                except: continue
-            if font is None: font = ImageFont.load_default()
-        except: font = ImageFont.load_default()
+                try:
+                    return ImageFont.truetype(path, size)
+                except:
+                    continue
+
+            # Pillow usually ships DejaVuSans.ttf; use it if available so `font_size` still works on Linux.
+            try:
+                import PIL
+                pil_dir = os.path.dirname(PIL.__file__)
+                for rel in [
+                    os.path.join("fonts", "DejaVuSans.ttf"),
+                    os.path.join("fonts", "DejaVuSansMono.ttf"),
+                ]:
+                    bundled = os.path.join(pil_dir, rel)
+                    try:
+                        return ImageFont.truetype(bundled, size)
+                    except:
+                        continue
+            except:
+                pass
+
+            # Last resort: default bitmap font (may not support sizing on older Pillow).
+            try:
+                return ImageFont.load_default(size=size)
+            except:
+                return ImageFont.load_default()
+
+        font = _load_font(int(font_size) if font_size else 32)
 
         outer_margin = 20
         if layout == "XY Plot":
