@@ -45,6 +45,7 @@ class XYImage:
                 "prompt": "PROMPT",
                 "extra_pnginfo": "EXTRA_PNGINFO",
                 "my_unique_id": "UNIQUE_ID",
+                "unique_id": "UNIQUE_ID",
             },
         }
 
@@ -57,7 +58,7 @@ class XYImage:
     @classmethod
     def IS_CHANGED(cls, gap_size, font_size, panel_mode, x_attr, y_attr, images=None, **kwargs):
         prompt = kwargs.get("prompt", None)
-        my_unique_id = kwargs.get("my_unique_id", None)
+        my_unique_id = kwargs.get("my_unique_id", None) or kwargs.get("unique_id", None)
         content_hash = cls._calculate_workflow_fingerprint(x_attr, y_attr, prompt, my_unique_id)
         return f"{content_hash}_{gap_size}_{font_size}_{panel_mode}"
 
@@ -395,12 +396,15 @@ class XYImage:
         return torch.from_numpy(np_grid).unsqueeze(0)
 
     # --- 主入口 ---
-    def build_grid(self, images, gap_size, font_size, panel_mode, x_attr, y_attr, prompt=None, extra_pnginfo=None, my_unique_id=None):
+    def build_grid(self, images, gap_size, font_size, panel_mode, x_attr, y_attr, prompt=None, extra_pnginfo=None, my_unique_id=None, unique_id=None):
         global _XY_GLOBAL_CACHE
         print(f"\n[XY_Image] ========== START ==========")
         
         if comfy_nodes is None or not isinstance(prompt, dict):
             return images, images
+
+        if my_unique_id is None:
+            my_unique_id = unique_id
         
         # 1. 计算 Content Hash
         current_content_hash = self._calculate_workflow_fingerprint(x_attr, y_attr, prompt, my_unique_id)
