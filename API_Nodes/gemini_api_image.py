@@ -1,10 +1,14 @@
 import base64
 import io
+import threading
+import time
+from datetime import datetime
 from typing import List, Optional, Tuple
 
 import numpy as np
 from PIL import Image
 import torch
+import comfy.model_management as model_management
 
 
 def _get_first_image(image):
@@ -72,6 +76,13 @@ class Gemini_API_Image:
     RETURN_NAMES = ("image", "text")
     FUNCTION = "generate"
     CATEGORY = "DaNodes/API"
+
+    def _log(self, message: str) -> None:
+        ts = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        print(f"🌞[Gemini_API_Image {ts}] {message}", flush=True)
+
+    def _check_interrupted(self) -> None:
+        model_management.throw_exception_if_processing_interrupted()
 
     def _pil_to_png_bytes(self, image: Image.Image) -> bytes:
         buf = io.BytesIO()
@@ -198,6 +209,12 @@ class Gemini_API_Image:
         image_13=None,
         image_14=None,
     ) -> Tuple[torch.Tensor, str]:
+        try:
+            self._check_interrupted()
+        except model_management.InterruptProcessingException:
+            self._log("Interrupted before request started.")
+            return (self._empty_image(), "Task cancelled.")
+
         if not API_Key or API_Key.strip() in ("<your_key>", "your_key", "api_key"):
             return (self._empty_image(), "API key is missing.")
 
@@ -244,21 +261,64 @@ class Gemini_API_Image:
                     setattr(image_cfg, "seed", int(noise_seed))
                 except Exception:
                     pass
-            response = client.models.generate_content(
-                model=model_name,
-                contents=contents,
-                config=types.GenerateContentConfig(
-                    response_modalities=["TEXT", "IMAGE"],
-                    image_config=image_cfg,
-                ),
+            self._log(
+                f"Request start: model={model_name}, refs={len(ref_images)}, aspect_ratio={aspect_ratio_value}, resolution={resolution}, seed={int(noise_seed) if noise_seed else 0}"
             )
+            start_time = time.monotonic()
+
+            response_box = {"response": None, "error": None}
+
+            def _do_request():
+                try:
+                    response_box["response"] = client.models.generate_content(
+                        model=model_name,
+                        contents=contents,
+                        config=types.GenerateContentConfig(
+                            response_modalities=["TEXT", "IMAGE"],
+                            image_config=image_cfg,
+                        ),
+                    )
+                except Exception as e:  # defensive: capture worker errors
+                    response_box["error"] = e
+
+            worker = threading.Thread(
+                target=_do_request,
+                name="GeminiGenerateContent",
+                daemon=True,
+            )
+            worker.start()
+
+            while worker.is_alive():
+                try:
+                    self._check_interrupted()
+                except model_management.InterruptProcessingException:
+                    elapsed = time.monotonic() - start_time
+                    self._log(f"Request interrupted after {elapsed:.2f}s.")
+                    return (self._empty_image(), "Task cancelled.")
+                time.sleep(0.25)
+
+            if response_box["error"] is not None:
+                raise response_box["error"]
+
+            response = response_box["response"]
+            elapsed = time.monotonic() - start_time
+            self._log(f"Request finished in {elapsed:.2f}s.")
         except Exception as e:
+            self._log(f"Request failed: {e}")
             return (self._empty_image(), f"Gemini request failed: {e}")
+
+        try:
+            self._check_interrupted()
+        except model_management.InterruptProcessingException:
+            self._log("Interrupted after request finished.")
+            return (self._empty_image(), "Task cancelled.")
 
         output_image, text = self._extract_response_parts(response)
         if output_image is None:
+            self._log("No image returned from Gemini.")
             return (self._empty_image(), text or "No image returned from Gemini.")
 
+        self._log("Image returned successfully.")
         return (_pil_to_tensor(output_image), text)
 
 
