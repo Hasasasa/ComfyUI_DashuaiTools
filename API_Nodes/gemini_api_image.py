@@ -51,6 +51,7 @@ class Gemini_API_Image:
                 "model_name": ("STRING", {"default": "gemini-3-pro-image-preview"}),
                 "aspect_ratio": (["1:1", "2:3", "3:2", "3:4", "4:3", "4:5", "5:4", "9:16", "16:9", "21:9"], {"default": "5:4"}),
                 "resolution": (["1K", "2K", "4K"], {"default": "2K"}),
+                "thinking_mode": ("BOOLEAN", {"default": False}),
                 "noise_seed": ("INT", {"default": 0, "min": 0, "max": 0xffffffffffffffff, "control_after_generate": True}),
             },
             "optional": {
@@ -97,6 +98,18 @@ class Gemini_API_Image:
             data = self._pil_to_png_bytes(img)
             contents.append(types_mod.Part.from_bytes(data=data, mime_type="image/png"))
         return contents
+
+    def _build_generate_config(self, types_mod, image_cfg, thinking_mode: bool):
+        config_kwargs = {
+            "response_modalities": ["TEXT", "IMAGE"],
+            "image_config": image_cfg,
+        }
+        if thinking_mode and hasattr(types_mod, "ThinkingConfig"):
+            try:
+                config_kwargs["thinking_config"] = types_mod.ThinkingConfig(include_thoughts=False)
+            except Exception:
+                pass
+        return types_mod.GenerateContentConfig(**config_kwargs)
 
     def _import_genai(self):
         try:
@@ -192,6 +205,7 @@ class Gemini_API_Image:
         model_name: str,
         aspect_ratio: str,
         resolution: str,
+        thinking_mode: bool = False,
         noise_seed: int = 0,
         aspect_ratio_text: str = "",
         image_1=None,
@@ -262,7 +276,7 @@ class Gemini_API_Image:
                 except Exception:
                     pass
             self._log(
-                f"Request start: model={model_name}, refs={len(ref_images)}, aspect_ratio={aspect_ratio_value}, resolution={resolution}, seed={int(noise_seed) if noise_seed else 0}"
+                f"Request start: model={model_name}, refs={len(ref_images)}, aspect_ratio={aspect_ratio_value}, resolution={resolution}, thinking={bool(thinking_mode)}, seed={int(noise_seed) if noise_seed else 0}"
             )
             start_time = time.monotonic()
 
@@ -273,13 +287,20 @@ class Gemini_API_Image:
                     response_box["response"] = client.models.generate_content(
                         model=model_name,
                         contents=contents,
-                        config=types.GenerateContentConfig(
-                            response_modalities=["TEXT", "IMAGE"],
-                            image_config=image_cfg,
-                        ),
+                        config=self._build_generate_config(types, image_cfg, bool(thinking_mode)),
                     )
                 except Exception as e:  # defensive: capture worker errors
-                    response_box["error"] = e
+                    if not thinking_mode:
+                        response_box["error"] = e
+                        return
+                    try:
+                        response_box["response"] = client.models.generate_content(
+                            model=model_name,
+                            contents=contents,
+                            config=self._build_generate_config(types, image_cfg, False),
+                        )
+                    except Exception as fallback_error:
+                        response_box["error"] = fallback_error
 
             worker = threading.Thread(
                 target=_do_request,

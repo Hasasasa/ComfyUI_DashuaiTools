@@ -9,7 +9,9 @@
       "image": { "name": "图像" },
       "prompt": { "name": "提示词" },
       "output_language": { "name": "输出语言" },
+      "thinking_mode": { "name": "思考模式" },
       "temperature": { "name": "温度" },
+      "max_tokens": { "name": "最大 Token 数" },
       "noise_seed": { "name": "噪声随机种子" }
     }
   },
@@ -24,7 +26,9 @@
       "model_name": { "name": "模型名称" },
       "prompt": { "name": "提示词" },
       "output_language": { "name": "输出语言" },
+      "thinking_mode": { "name": "思考模式" },
       "temperature": { "name": "温度" },
+      "max_tokens": { "name": "最大 Token 数" },
       "concurrency": { "name": "并发数量" }
     }
   },
@@ -38,7 +42,9 @@
       "custom_instruction": { "name": "自定义指令" },
       "prompt": { "name": "用户提示词" },
       "output_language": { "name": "输出语言" },
+      "thinking_mode": { "name": "思考模式" },
       "temperature": { "name": "温度" },
+      "max_tokens": { "name": "最大 Token 数" },
       "noise_seed": { "name": "噪声随机种子" }
     }
   },
@@ -51,6 +57,7 @@
       "aspect_ratio": { "name": "比例（下拉）" },
       "aspect_ratio_text": { "name": "比例（输入）" },
       "resolution": { "name": "分辨率" },
+      "thinking_mode": { "name": "思考模式" },
       "noise_seed": { "name": "噪声随机种子" },
       "image_1": { "name": "参考图 1" },
       "image_2": { "name": "参考图 2" },

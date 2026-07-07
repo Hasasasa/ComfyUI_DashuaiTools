@@ -1,6 +1,7 @@
 import base64
 import io
 import json
+import re
 import time
 from typing import Tuple
 
@@ -42,6 +43,7 @@ class API_caption:
                     },
                 ),
                 "output_language": (["Chinese", "English"], {"default": "Chinese"}),
+                "thinking_mode": ("BOOLEAN", {"default": False}),
                 "temperature": ("FLOAT", {"default": 0.5, "min": 0.0, "max": 2.0, "step": 0.01}),
                 "max_tokens": ("INT", {"default": 258, "min": 125, "max": 4096}),
                 # 使用 control_after_generate 支持 fixed / increment / decrement / randomize 等控制选项
@@ -54,6 +56,24 @@ class API_caption:
     FUNCTION = "generate"
     CATEGORY = "DaNodes/API"
 
+    @staticmethod
+    def _strip_thinking_blocks(text: str) -> str:
+        if not isinstance(text, str):
+            return text
+        return re.sub(r"(?is)<think>.*?</think>\s*", "", text).strip()
+
+    @staticmethod
+    def _apply_thinking_config(payload: dict, api_type: str, thinking_mode: bool) -> dict:
+        if api_type == "OpenRouter":
+            payload["reasoning"] = (
+                {"enabled": True, "exclude": False}
+                if thinking_mode
+                else {"effort": "none", "exclude": True}
+            )
+        else:
+            payload["enable_thinking"] = bool(thinking_mode)
+        return payload
+
     def generate(
         self,
         api_type: str,
@@ -62,6 +82,7 @@ class API_caption:
         image: torch.Tensor,
         prompt: str,
         output_language: str,
+        thinking_mode: bool = False,
         temperature: float = 0.5,
         max_tokens: int = 512,
         api_url: str = "",
@@ -121,6 +142,7 @@ class API_caption:
                 "max_tokens": int(max_tokens),
                 "temperature": float(temperature),
             }
+            payload = self._apply_thinking_config(payload, api_type, bool(thinking_mode))
             # 如果后端支持 seed 字段，则可用此随机种子控制多次运行的一致性/随机性
             try:
                 payload["seed"] = int(noise_seed)
@@ -137,18 +159,30 @@ class API_caption:
             # 固定使用统一 JSON 风格请求，遇到 429/5xx/读超时简单重试一次
             r = None
             last_err = None
-            for attempt in range(2):
+            thinking_fallback_used = False
+            for attempt in range(3):
                 try:
                     r = session.post(api_url, json=payload, headers=headers, timeout=90)
                 except Exception as e:
                     last_err = e
-                    if attempt == 0:
+                    if attempt < 2:
                         time.sleep(1.0)
                         continue
                     return (f"API 请求失败（网络连接错误）: {e}",)
-                if not r.ok and r.status_code in (429, 500, 502, 503, 504) and attempt == 0:
-                    time.sleep(1.0)
-                    continue
+                if not r.ok:
+                    if (
+                        not thinking_fallback_used
+                        and r.status_code in (400, 422)
+                        and ("enable_thinking" in payload or "reasoning" in payload)
+                    ):
+                        payload = dict(payload)
+                        payload.pop("enable_thinking", None)
+                        payload.pop("reasoning", None)
+                        thinking_fallback_used = True
+                        continue
+                    if r.status_code in (429, 500, 502, 503, 504) and attempt < 2:
+                        time.sleep(1.0)
+                        continue
                 break
 
             if r is None:
@@ -211,7 +245,7 @@ class API_caption:
             else:
                 caption = str(result)
 
-            caption = caption.strip()
+            caption = self._strip_thinking_blocks(caption)
             if caption == "":
                 try:
                     pretty = json.dumps(result, ensure_ascii=False)

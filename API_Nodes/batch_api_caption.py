@@ -1,6 +1,7 @@
 import os
 import base64
 import json
+import re
 from typing import Tuple
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
@@ -20,6 +21,7 @@ class Batch_API_caption:
                 "model_name": ("STRING", {"default": "Qwen/Qwen3-VL-32B-Instruct"}),
                 "prompt": ("STRING", {"default": "You are a professional AI image generation prompt engineer. Please describe in detail the main body, foreground, mid-ground, background, composition, visual guidance, color tone, and light and shadow atmosphere of this image, and create an image prompt with depth, atmosphere, and artistic appeal. Requirements: Chinese prompt, no description of image watermark, no irrelevant words or symbols, no summary, limited to 800 words.", "multiline": True, "rows": 4}),
                 "output_language": (["Chinese", "English"], {"default": "Chinese"}),
+                "thinking_mode": ("BOOLEAN", {"default": False}),
                 "temperature": ("FLOAT", {"default": 0.5, "min": 0.0, "max": 2.0, "step": 0.01}),
                 "max_tokens": ("INT", {"default": 258, "min": 125, "max": 4096}),
                 "concurrency": ("INT", {"default": 6, "min": 1, "max": 32}),
@@ -30,6 +32,24 @@ class Batch_API_caption:
     RETURN_NAMES = ("log", "save_path")
     FUNCTION = "generate"
     CATEGORY = "DaNodes/API"
+
+    @staticmethod
+    def _strip_thinking_blocks(text: str) -> str:
+        if not isinstance(text, str):
+            return text
+        return re.sub(r"(?is)<think>.*?</think>\s*", "", text).strip()
+
+    @staticmethod
+    def _apply_thinking_config(payload: dict, api_type: str, thinking_mode: bool) -> dict:
+        if api_type == "OpenRouter":
+            payload["reasoning"] = (
+                {"enabled": True, "exclude": False}
+                if thinking_mode
+                else {"effort": "none", "exclude": True}
+            )
+        else:
+            payload["enable_thinking"] = bool(thinking_mode)
+        return payload
 
     @staticmethod
     def _extract_text_from_content(content):
@@ -83,6 +103,7 @@ class Batch_API_caption:
         attempt = 0
         last_err = None
         result = None
+        thinking_fallback_used = False
         while attempt <= max(0, int(retries)):
             try:
                 r = requests.post(api_url, json=payload, headers=headers, timeout=float(timeout_sec))
@@ -92,6 +113,16 @@ class Batch_API_caption:
                 continue
 
             if not r.ok:
+                if (
+                    not thinking_fallback_used
+                    and r.status_code in (400, 422)
+                    and ("enable_thinking" in payload or "reasoning" in payload)
+                ):
+                    payload = dict(payload)
+                    payload.pop("enable_thinking", None)
+                    payload.pop("reasoning", None)
+                    thinking_fallback_used = True
+                    continue
                 try:
                     body = r.json()
                     body = json.dumps(body, ensure_ascii=False)
@@ -135,7 +166,7 @@ class Batch_API_caption:
         else:
             caption = str(result)
 
-        caption = caption.strip()
+        caption = Batch_API_caption._strip_thinking_blocks(caption)
         if caption == "":
             try:
                 pretty = json.dumps(result, ensure_ascii=False)
@@ -146,7 +177,8 @@ class Batch_API_caption:
         return True, caption
 
     def generate(self, input_dir: str, output_dir: str, api_type: str, api_url: str, API_Key: str, model_name: str,
-                 prompt: str, output_language: str, temperature: float = 0.5, max_tokens: int = 512,
+                 prompt: str, output_language: str, thinking_mode: bool = False,
+                 temperature: float = 0.5, max_tokens: int = 512,
                  concurrency: int = 4) -> Tuple[str, str]:
         # 目录校验
         if not input_dir:
@@ -204,6 +236,7 @@ class Batch_API_caption:
                     prompt_full = f"{prompt} Please return the description in English."
 
                 payload = self._build_payload(model_name, prompt_full, img_data_uri, temperature, max_tokens)
+                payload = self._apply_thinking_config(payload, api_type, bool(thinking_mode))
                 ok, resp = self._post(api_url, API_Key, payload, timeout_sec=90.0, retries=1)
 
                 if ok:
